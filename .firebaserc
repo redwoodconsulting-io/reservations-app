@@ -1,5 +1,11 @@
 {
   "projects": {
     "default": "ce-reservations-prod"
+  },
+  "targets": {},
+  "etags": {
+    "ce-reservations-prod": {
+      "extensionInstances": {}
+    }
   }
 }
