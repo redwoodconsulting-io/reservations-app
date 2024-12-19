@@ -17,3 +17,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CE_RESERVATIONS_PROD }}
           channelId: live
           projectId: your-firebase-project-id
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
