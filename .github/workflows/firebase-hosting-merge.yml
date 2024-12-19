@@ -13,9 +13,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Use Node.js
         uses: actions/setup-node@v4
+        working-directory: ./hosting
         with:
           node-version-file: '.nvmrc'
       - name: npm install, build
+        working-directory: ./hosting
         run: |
           npm install
           npm run build
