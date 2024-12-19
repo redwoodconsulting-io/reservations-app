@@ -1,5 +1,11 @@
 {
   "projects": {
     "default": "your-firebase-project-id"
+  },
+  "targets": {},
+  "etags": {
+    "your-firebase-project-id": {
+      "extensionInstances": {}
+    }
   }
 }
