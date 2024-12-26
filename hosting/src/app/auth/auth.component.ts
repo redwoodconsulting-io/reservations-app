@@ -1,24 +1,18 @@
-import {Component, inject, OnDestroy, PLATFORM_ID} from '@angular/core';
-import {Auth, signInAnonymously, signOut, User} from '@angular/fire/auth';
+import {Component, inject, model, OnDestroy, PLATFORM_ID} from '@angular/core';
+import {Auth, signOut, User} from '@angular/fire/auth';
 import {switchMap} from 'rxjs/operators';
 import {AsyncPipe, isPlatformBrowser} from '@angular/common';
 import cookies from 'js-cookie';
 import {from, Observable} from 'rxjs';
-import {
-  beforeAuthStateChanged,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  onIdTokenChanged,
-  signInWithPopup
-} from "firebase/auth";
+import {beforeAuthStateChanged, onAuthStateChanged, onIdTokenChanged} from "firebase/auth";
 import {ɵzoneWrap} from "@angular/fire";
 import {LoginDialog} from './login-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 
 // TODO bring this to RxFire
-function _authState(auth: Auth): Observable<User|null> {
+function _authState(auth: Auth): Observable<User | null> {
   return from(auth.authStateReady()).pipe(
-    switchMap(() => new Observable<User|null>((subscriber) => {
+    switchMap(() => new Observable<User | null>((subscriber) => {
       const unsubscribe = onAuthStateChanged(
         auth,
         subscriber.next.bind(subscriber),
@@ -73,7 +67,7 @@ export class AuthComponent implements OnDestroy {
         }
       });
 
-      let priorCookieValue: string|undefined;
+      let priorCookieValue: string | undefined;
       this.unsubscribeFromBeforeAuthStateChanged = beforeAuthStateChanged(this.auth, async (user) => {
         priorCookieValue = cookies.get("__session");
         const idToken = await user?.getIdToken();
@@ -110,6 +104,13 @@ export class AuthComponent implements OnDestroy {
       width: '250px',
       enterAnimationDuration,
       exitAnimationDuration,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return;
+      }
+      console.log(`Login with: ${result.email} and ${result.password}`);
     });
   }
 }
