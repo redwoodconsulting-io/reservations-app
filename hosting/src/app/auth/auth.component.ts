@@ -1,11 +1,19 @@
-import { Component, inject, makeStateKey, OnDestroy, PLATFORM_ID, TransferState } from '@angular/core';
-import { Auth, signInAnonymously, signOut, User } from '@angular/fire/auth';
-import { map, startWith, switchMap, tap } from 'rxjs/operators';
-import { AsyncPipe, isPlatformBrowser, isPlatformServer } from '@angular/common';
+import {Component, inject, OnDestroy, PLATFORM_ID} from '@angular/core';
+import {Auth, signInAnonymously, signOut, User} from '@angular/fire/auth';
+import {switchMap} from 'rxjs/operators';
+import {AsyncPipe, isPlatformBrowser} from '@angular/common';
 import cookies from 'js-cookie';
-import { from, Observable } from 'rxjs';
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, beforeAuthStateChanged, onIdTokenChanged } from "firebase/auth";
-import { ɵzoneWrap } from "@angular/fire";
+import {from, Observable} from 'rxjs';
+import {
+  beforeAuthStateChanged,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  onIdTokenChanged,
+  signInWithPopup
+} from "firebase/auth";
+import {ɵzoneWrap} from "@angular/fire";
+import {LoginDialog} from './login-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
 
 // TODO bring this to RxFire
 function _authState(auth: Auth): Observable<User|null> {
@@ -29,8 +37,7 @@ export const authState = ɵzoneWrap(_authState, true);
   template: `
     <p>
       @if ((user | async) === null) {
-        <button (click)="loginAnonymously()">Log in anonymously</button>
-        <button (click)="loginWithGoogle()">Log in with Google</button>
+        <button (click)="login()">Log in</button>
       } @else {
         <p>
           Logged in as {{ (user | async)?.email }}
@@ -40,26 +47,19 @@ export const authState = ɵzoneWrap(_authState, true);
     </p>
   `,
   standalone: true,
-  imports: [AsyncPipe]
+  imports: [AsyncPipe, LoginDialog]
 })
 export class AuthComponent implements OnDestroy {
 
   private readonly auth = inject(Auth);
   protected readonly authState = authState(this.auth);
 
-  private readonly transferState = inject(TransferState);
-  private readonly transferStateKey = makeStateKey<string|undefined>("auth:uid");
   protected readonly user = this.authState.pipe();
-  protected readonly uid = this.user.pipe(map(u => u?.uid)).pipe(
-    isPlatformServer(inject(PLATFORM_ID)) ?
-      tap(it => this.transferState.set(this.transferStateKey, it)) :
-      this.transferState.hasKey(this.transferStateKey) ?
-        startWith(this.transferState.get(this.transferStateKey, undefined)) :
-        tap()
-  );
 
   private readonly unsubscribeFromOnIdTokenChanged: (() => void) | undefined;
   private readonly unsubscribeFromBeforeAuthStateChanged: (() => void) | undefined;
+
+  readonly dialog = inject(MatDialog);
 
   constructor() {
     if (isPlatformBrowser(inject(PLATFORM_ID))) {
@@ -102,12 +102,14 @@ export class AuthComponent implements OnDestroy {
     return await signOut(this.auth);
   }
 
-  async loginAnonymously() {
-    return await signInAnonymously(this.auth);
-  }
+  login() {
+    const enterAnimationDuration = "250ms";
+    const exitAnimationDuration = "250ms";
 
-  async loginWithGoogle() {
-    return await signInWithPopup(this.auth, new GoogleAuthProvider());
+    const dialogRef = this.dialog.open(LoginDialog, {
+      width: '250px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
   }
-
 }
