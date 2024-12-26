@@ -8,6 +8,7 @@ import {connectFirestoreEmulator, getFirestore, provideFirestore} from '@angular
 
 import reservationsAppConfig from './reservations-app.config.json';
 import {environment} from '../environments/environment';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,6 +35,6 @@ export const appConfig: ApplicationConfig = {
         connectFirestoreEmulator(firestore, 'localhost', 8080)
       }
       return firestore;
-    }),
+    }), provideAnimationsAsync(),
   ],
 };
