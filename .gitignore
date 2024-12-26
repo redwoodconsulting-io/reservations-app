@@ -10,6 +10,7 @@ firebase-debug.*.log*
 # Firebase stuff
 functions/venv
 functions/__pycache__
+/emulator-data
 
 # Firebase cache
 .firebase/
