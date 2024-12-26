@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideAuth(() => {
       const auth = getAuth();
       if (environment.useEmulators) {
-        connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+        connectAuthEmulator(auth, 'http://localhost:9099');
       }
       return auth;
     }),
