@@ -1,13 +1,14 @@
-import {Component, inject, model, OnDestroy, PLATFORM_ID} from '@angular/core';
-import {Auth, signOut, User} from '@angular/fire/auth';
+import {Component, inject, OnDestroy, PLATFORM_ID} from '@angular/core';
+import {Auth, signInWithEmailAndPassword, signOut, User} from '@angular/fire/auth';
 import {switchMap} from 'rxjs/operators';
 import {AsyncPipe, isPlatformBrowser} from '@angular/common';
 import cookies from 'js-cookie';
-import {from, Observable} from 'rxjs';
+import {BehaviorSubject, from, Observable} from 'rxjs';
 import {beforeAuthStateChanged, onAuthStateChanged, onIdTokenChanged} from "firebase/auth";
 import {ɵzoneWrap} from "@angular/fire";
 import {LoginDialog} from './login-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
+import {MatError} from '@angular/material/form-field';
 
 // TODO bring this to RxFire
 function _authState(auth: Auth): Observable<User | null> {
@@ -28,20 +29,9 @@ export const authState = ɵzoneWrap(_authState, true);
 
 @Component({
   selector: 'app-auth',
-  template: `
-    <p>
-      @if ((user | async) === null) {
-        <button (click)="login()">Log in</button>
-      } @else {
-        <p>
-          Logged in as {{ (user | async)?.email }}
-          <button (click)="logout()">Log out</button>
-        </p>
-      }
-    </p>
-  `,
+  templateUrl: 'auth.component.html',
   standalone: true,
-  imports: [AsyncPipe, LoginDialog]
+  imports: [AsyncPipe, LoginDialog, MatError]
 })
 export class AuthComponent implements OnDestroy {
 
@@ -52,6 +42,9 @@ export class AuthComponent implements OnDestroy {
 
   private readonly unsubscribeFromOnIdTokenChanged: (() => void) | undefined;
   private readonly unsubscribeFromBeforeAuthStateChanged: (() => void) | undefined;
+
+  protected loginErrorMessage = new BehaviorSubject("");
+  loginErrorMessage$ = this.loginErrorMessage.asObservable();
 
   readonly dialog = inject(MatDialog);
 
@@ -107,10 +100,24 @@ export class AuthComponent implements OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) {
+      if (!result || !result.email || !result.password) {
+        // Skip: missing email or password
         return;
       }
-      console.log(`Login with: ${result.email} and ${result.password}`);
+
+      console.log(`Attempting password login for: ${result.email}`);
+      signInWithEmailAndPassword(this.auth, result.email, result.password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(`Signed in as ${user.email}`);
+          this.loginErrorMessage.next("");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.error(`Error: ${errorCode} - ${errorMessage}`);
+          this.loginErrorMessage.next(errorCode);
+        });
     });
   }
 }

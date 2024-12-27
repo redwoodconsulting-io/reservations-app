@@ -1,0 +1,15 @@
+<div class="auth">
+  @if ((user | async) === null) {
+    <button (click)="login()">Log in</button>
+    @if (loginErrorMessage$ | async) {
+      <p matError>
+        Login error: {{ loginErrorMessage$ | async }}
+      </p>
+    }
+  } @else {
+    <p>
+      Logged in as {{ (user | async)?.email }}
+      <button (click)="logout()">Log out</button>
+    </p>
+  }
+</div>
