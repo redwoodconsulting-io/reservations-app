@@ -8,7 +8,7 @@ import {connectFirestoreEmulator, getFirestore, provideFirestore} from '@angular
 
 import reservationsAppConfig from './reservations-app.config.json';
 import {environment} from '../environments/environment';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {DialogService} from './utility/dialog-service';
 import {MatDialog} from '@angular/material/dialog';
 
@@ -37,7 +37,8 @@ export const appConfig: ApplicationConfig = {
         connectFirestoreEmulator(firestore, 'localhost', 8080)
       }
       return firestore;
-    }), provideAnimationsAsync(),
-    { provide: MatDialog, useClass: DialogService },
+    }),
+    provideAnimationsAsync(),
+    {provide: MatDialog, useClass: DialogService},
   ],
 };
