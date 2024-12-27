@@ -2,6 +2,14 @@
   <h1>Hello, {{ title }}</h1>
   <p>The app is running. 🎉</p>
   <app-auth/>
+  @if (user$ | async) {
+    Year: {{ configYear }}
+    <week-table [weeks]="(weeks$ | async) || []" [units]="(units$ | async) || []"/>
+  } @else {
+    <p>
+      Please log in
+    </p>
+  }
 </main>
 
 <router-outlet/>
