@@ -4,7 +4,7 @@
   <app-auth/>
   @if (user$ | async) {
     Year: {{ configYear }}
-    <week-table [weeks]="(weeks$ | async) || []" [units]="(units$ | async) || []"/>
+    <week-table [weeks]="(weeks$ | async) || []" [units]="(units$ | async) || []" [pricingTiers]="(pricingTiers$ | async) || {}"/>
   } @else {
     <p>
       Please log in

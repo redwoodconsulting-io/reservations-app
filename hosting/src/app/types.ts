@@ -1,5 +1,6 @@
 export interface WeekConfig {
   startDate: string;
+  pricingTierId: string;
 }
 
 export interface ConfigData {
@@ -8,5 +9,14 @@ export interface ConfigData {
 }
 
 export interface BookableUnit {
+  id: string;
   name: string;
 }
+
+export interface PricingTier {
+  id: string;
+  name: string;
+  color: number[];
+}
+
+export type PricingTierMap = {[key: string]: PricingTier};
