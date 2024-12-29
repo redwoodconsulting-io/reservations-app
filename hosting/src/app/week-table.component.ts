@@ -31,10 +31,11 @@ import {DataService} from './data-service';
 import {MatDivider} from '@angular/material/divider';
 import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
+import {DateTime} from 'luxon';
 
 interface WeekRow {
-  startDate: Date;
-  endDate: Date;
+  startDate: DateTime;
+  endDate: DateTime;
   pricingTier: PricingTier;
   reservations: { [key: string]: WeekReservation[] };
 }
@@ -99,14 +100,13 @@ export class WeekTableComponent {
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     return of(
       weeks.map(week => {
-        const startDate = new Date(Date.parse(week.startDate));
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 7);
+        const startDate = DateTime.fromISO(week.startDate);
+        const endDate = startDate.plus({days: 7});
         const pricingTier = pricingTiers[week.pricingTierId];
 
         const weekReservations = reservations.filter(reservation => {
-          const reservationStartDate = new Date(Date.parse(reservation.startDate));
-          const reservationEndDate = new Date(Date.parse(reservation.endDate));
+          const reservationStartDate = DateTime.fromISO(reservation.startDate);
+          const reservationEndDate = DateTime.fromISO(reservation.endDate);
           return reservationStartDate >= startDate && reservationEndDate <= endDate;
         }).map(reservation => {
           const unit = units.find(unit => unit.id === reservation.unitId);

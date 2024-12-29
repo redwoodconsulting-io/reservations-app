@@ -11,6 +11,7 @@ import {environment} from '../environments/environment';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {DialogService} from './utility/dialog-service';
 import {MatDialog} from '@angular/material/dialog';
+import {provideLuxonDateAdapter} from '@angular/material-luxon-adapter';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,5 +41,6 @@ export const appConfig: ApplicationConfig = {
     }),
     provideAnimationsAsync(),
     {provide: MatDialog, useClass: DialogService},
+    provideLuxonDateAdapter(),
   ],
 };
