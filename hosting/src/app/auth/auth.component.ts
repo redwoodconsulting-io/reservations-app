@@ -92,7 +92,6 @@ export class AuthComponent implements OnDestroy {
 
   login() {
     const dialogRef = this.dialog.open(LoginDialog, {
-      width: '250px',
       ...ANIMATION_SETTINGS,
     });
 

@@ -182,7 +182,6 @@ export class WeekTableComponent {
   addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
     const dialogRef = this.dialog.open(ReserveDialog, {
       data: {unit, tier, weekStartDate, weekEndDate},
-      width: '250px',
       ...ANIMATION_SETTINGS,
     });
 
