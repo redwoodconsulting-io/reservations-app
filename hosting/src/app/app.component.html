@@ -2,7 +2,7 @@
   <h1>{{ title }}</h1>
   <app-auth/>
   @if (user$ | async) {
-    Year: {{ configYear }}
+    Year: {{ dataService.configYear }}
     <week-table
       [weeks]="(weeks$ | async) || []"
       [units]="(units$ | async) || []"
