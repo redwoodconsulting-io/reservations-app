@@ -1,27 +1,29 @@
 <table mat-table [dataSource]="tableRows$">
   <!-- Week Start Column -->
   <ng-container matColumnDef="week">
-    <th mat-header-cell *matHeaderCellDef> Week </th>
+    <th mat-header-cell *matHeaderCellDef>Week</th>
     <td mat-cell *matCellDef="let element">
-      {{element.startDate | shortDate }} –
-      {{element.endDate | shortDate}}<br>
-      {{element.pricingTier?.name || ''}}
+      {{ element.startDate | shortDate }} –
+      {{ element.endDate | shortDate }}<br>
+      {{ element.pricingTier?.name || '' }}
     </td>
     <td mat-footer-cell *matFooterCellDef>Pricing</td>
   </ng-container>
 
   <!-- Unit Columns -->
   <ng-container *ngFor="let unit of units" [matColumnDef]="unit.name">
-    <th mat-header-cell *matHeaderCellDef> {{unit.name}}</th>
+    <th mat-header-cell *matHeaderCellDef> {{ unit.name }}</th>
     <td mat-cell *matCellDef="let element">
       @let unitReservations = element.reservations[unit.id];
 
       @if (unitReservations?.length > 1) {
         Reserved by the day
       } @else if (unitReservations?.length === 1) {
-        {{unitReservations[0].guestName}}
+        {{ unitReservations[0].guestName }}
       } @else {
-        –
+        <button mat-icon-button>
+          <mat-icon class="material-icons-outlined">add_box</mat-icon>
+        </button>
       }
     </td>
     <td mat-footer-cell *matFooterCellDef>
@@ -29,11 +31,11 @@
         <tr class="mat-mdc-row" *ngFor="let item of pricingTiers | keyvalue" [style]="rowStyle($any(item.value))">
           @let tier = $any(item.value);
           <td mat-cell>
-            {{tier.name}}
+            {{ tier.name }}
           </td>
           <td class="mat-mdc-cell">
-            {{(unitTierPricing(unit, tier)?.weeklyPrice | currency: "USD" : "symbol" : "1.0-0") || '–'}}/wk<br/>
-            {{(unitTierPricing(unit, tier)?.dailyPrice | currency: "USD" : "symbol" : "1.0-0") || '–'}}/day
+            {{ (unitTierPricing(unit, tier)?.weeklyPrice | currency: "USD" : "symbol" : "1.0-0") || '–' }}/wk<br/>
+            {{ (unitTierPricing(unit, tier)?.dailyPrice | currency: "USD" : "symbol" : "1.0-0") || '–' }}/day
           </td>
         </tr>
       </table>
@@ -41,6 +43,8 @@
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row class="weeks-content" *matRowDef="let row; columns: displayedColumns" [style]="rowStyle(row.pricingTier)"></tr>
+  <tr mat-row class="weeks-content" *matRowDef="let row; columns: displayedColumns"
+      [style]="rowStyle(row.pricingTier)">
+  </tr>
   <tr mat-footer-row class="pricing-footer" *matFooterRowDef="displayedColumns"></tr>
 </table>

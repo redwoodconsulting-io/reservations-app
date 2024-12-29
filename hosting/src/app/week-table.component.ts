@@ -29,6 +29,8 @@ import {
 } from './types';
 import {DataService} from './data-service';
 import {MatDivider} from '@angular/material/divider';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 
 interface WeekRow {
   startDate: Date;
@@ -68,6 +70,8 @@ interface WeekReservation {
     KeyValuePipe,
     MatDivider,
     CurrencyPipe,
+    MatIconButton,
+    MatIcon,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
