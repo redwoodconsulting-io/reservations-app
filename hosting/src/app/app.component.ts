@@ -6,7 +6,7 @@ import {AuthComponent} from './auth/auth.component';
 import {Auth, user} from '@angular/fire/auth';
 import {map, Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
-import {BookableUnit, ConfigData, PricingTier, Reservation, WeekConfig} from './types';
+import {BookableUnit, ConfigData, PricingTier, Reservation, ReservableWeek} from './types';
 
 
 @Component({
@@ -31,7 +31,7 @@ export class AppComponent {
 
   // Eventually, this will be dynamic…
   configYear = 2025;
-  weeks$: Observable<WeekConfig[]>;
+  weeks$: Observable<ReservableWeek[]>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
   pricingTiers$: Observable<{ [key: string]: PricingTier }>;

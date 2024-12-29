@@ -1,11 +1,11 @@
-export interface WeekConfig {
+export interface ReservableWeek {
   startDate: string;
   pricingTierId: string;
 }
 
 export interface ConfigData {
   year: number;
-  weeks: WeekConfig[];
+  weeks: ReservableWeek[];
 }
 
 export interface BookableUnit {

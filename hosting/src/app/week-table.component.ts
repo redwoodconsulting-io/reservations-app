@@ -14,7 +14,7 @@ import {
 } from '@angular/material/table';
 import {ShortDate} from './utility/short-date.pipe';
 import {Observable, of} from 'rxjs';
-import {BookableUnit, PricingTier, PricingTierMap, Reservation, WeekConfig} from './types';
+import {BookableUnit, PricingTier, PricingTierMap, Reservation, ReservableWeek} from './types';
 
 interface WeekRow {
   startDate: Date;
@@ -56,13 +56,13 @@ export class WeekTableComponent {
   private _reservations: Reservation[] = [];
   private _pricingTiers: PricingTierMap = {};
   private _units: BookableUnit[] = [];
-  private _weeks: WeekConfig[] = [];
+  private _weeks: ReservableWeek[] = [];
 
   // Main table fields
   tableRows$: Observable<WeekRow[]> = of([])
   displayedColumns: string[] = [];
 
-  buildTableRows(weeks: WeekConfig[], units: BookableUnit[], pricingTiers: PricingTierMap, reservations: Reservation[]): Observable<WeekRow[]> {
+  buildTableRows(weeks: ReservableWeek[], units: BookableUnit[], pricingTiers: PricingTierMap, reservations: Reservation[]): Observable<WeekRow[]> {
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     return of(
       weeks.map(week => {
@@ -110,7 +110,7 @@ export class WeekTableComponent {
   }
 
   @Input()
-  set weeks(value: WeekConfig[]) {
+  set weeks(value: ReservableWeek[]) {
     this._weeks = value;
     this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
   }
