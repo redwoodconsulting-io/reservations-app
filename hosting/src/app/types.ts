@@ -13,10 +13,17 @@ export interface BookableUnit {
   name: string;
 }
 
+export interface Reservation {
+  startDate: string;
+  endDate: string;
+  unitId: string;
+  guestName: string;
+}
+
 export interface PricingTier {
   id: string;
   name: string;
   color: number[];
 }
 
-export type PricingTierMap = {[key: string]: PricingTier};
+export type PricingTierMap = { [key: string]: PricingTier };
