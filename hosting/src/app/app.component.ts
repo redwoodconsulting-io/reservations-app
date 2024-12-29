@@ -1,12 +1,12 @@
 import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {collection, collectionData, doc, docData, Firestore} from '@angular/fire/firestore';
-import {AsyncPipe} from '@angular/common';
+import {collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
+import {AsyncPipe, NgForOf} from '@angular/common';
 import {AuthComponent} from './auth/auth.component';
 import {Auth, user} from '@angular/fire/auth';
 import {map, Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
-import {BookableUnit, ConfigData, PricingTier} from './types';
+import {BookableUnit, ConfigData, PricingTier, Reservation, WeekConfig} from './types';
 
 
 @Component({
@@ -17,6 +17,7 @@ import {BookableUnit, ConfigData, PricingTier} from './types';
     AsyncPipe,
     AuthComponent,
     WeekTableComponent,
+    NgForOf,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -26,16 +27,12 @@ export class AppComponent {
   user$ = user(this.auth);
   private readonly firestore = inject(Firestore);
 
-  title = 'reservations-app';
+  title = 'Reservations-App';
 
-  configYear = '2025';
-  configCollection = collection(this.firestore, 'config');
-  configRef = doc(this.configCollection, this.configYear);
-
-  weeks$ = (docData(this.configRef) as Observable<ConfigData>).pipe(
-    map(it => it?.weeks || []),
-  ).pipe();
-
+  // Eventually, this will be dynamic…
+  configYear = 2025;
+  weeks$: Observable<WeekConfig[]>;
+  reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
   pricingTiers$: Observable<{ [key: string]: PricingTier }>;
 
@@ -71,5 +68,16 @@ export class AppComponent {
         }
       )
     );
+
+    const weeksCollection = collection(this.firestore, 'weeks');
+    const weeksQuery = query(weeksCollection, where('year', '==', this.configYear), limit(1));
+    this.weeks$ = collectionData(weeksQuery).pipe(
+      map((it) => it[0] as ConfigData),
+      map((it) => it?.weeks || []),
+    );
+
+    const reservationsCollection = collection(this.firestore, 'reservations');
+    const reservationsQuery = query(reservationsCollection, where('startDate', '>=', String(this.configYear)), where('endDate', '<', String(this.configYear + 1)));
+    this.reservations$ = collectionData(reservationsQuery).pipe() as Observable<Reservation[]>;
   }
 }
