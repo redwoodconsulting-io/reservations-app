@@ -1,15 +1,25 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Signal} from '@angular/core';
 import {map, Observable} from 'rxjs';
-import {BookableUnit, ConfigData, PricingTier, ReservableWeek, Reservation} from './types';
+import {
+  BookableUnit,
+  ConfigData,
+  PricingTier,
+  PricingTierMap,
+  ReservableWeek,
+  Reservation,
+  UnitPricing,
+  UnitPricingMap
+} from './types';
 import {collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
-  pricingTiers$: Observable<{ [key: string]: PricingTier }>;
+  pricingTiers$: Observable<PricingTierMap>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
+  unitPricing$: Observable<UnitPricingMap>;
   weeks$: Observable<ReservableWeek[]>;
 
   // Eventually, this will be dynamic…
@@ -51,6 +61,23 @@ export class DataService {
       toFirestore: (it: any) => it,
     });
     this.units$ = collectionData(bookableUnitsCollection).pipe();
+
+    const unitPricingCollection = collection(firestore, 'unitPricing')
+    this.unitPricing$ = collectionData(unitPricingCollection).pipe(
+      map(it => it as UnitPricing[]),
+      map(
+        it => {
+          return it.reduce((acc, unitPricing) => {
+            const key = unitPricing.unitId;
+            if (!acc[key]) {
+              acc[key] = [];
+            }
+            acc[key].push(unitPricing);
+            return acc;
+          }, {} as UnitPricingMap);
+        }
+      )
+    )
 
     const weeksCollection = collection(firestore, 'weeks');
     const weeksQuery = query(weeksCollection, where('year', '==', this.configYear), limit(1));

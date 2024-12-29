@@ -27,3 +27,13 @@ export interface PricingTier {
 }
 
 export type PricingTierMap = { [key: string]: PricingTier };
+
+export interface UnitPricing {
+  year: number;
+  tierId: string;
+  unitId: string;
+  weeklyPrice: number;
+  dailyPrice: number;
+}
+
+export type UnitPricingMap = { [key: string]: UnitPricing[] };

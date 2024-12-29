@@ -8,6 +8,7 @@
       [units]="(units$ | async) || []"
       [pricingTiers]="(pricingTiers$ | async) || {}"
       [reservations]="(reservations$ | async) || []"
+      [unitPricing]="(unitPricing$ | async) || {}"
     />
   } @else {
     <p>

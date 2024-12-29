@@ -1,9 +1,13 @@
-import {Component, Input} from '@angular/core';
-import {AsyncPipe, NgForOf} from '@angular/common';
+import {Component, inject, Input} from '@angular/core';
+import {AsyncPipe, CurrencyPipe, KeyValuePipe, NgForOf} from '@angular/common';
 import {
   MatCell,
   MatCellDef,
   MatColumnDef,
+  MatFooterCell,
+  MatFooterCellDef,
+  MatFooterRow,
+  MatFooterRowDef,
   MatHeaderCell,
   MatHeaderCellDef,
   MatHeaderRow,
@@ -14,7 +18,17 @@ import {
 } from '@angular/material/table';
 import {ShortDate} from './utility/short-date.pipe';
 import {Observable, of} from 'rxjs';
-import {BookableUnit, PricingTier, PricingTierMap, Reservation, ReservableWeek} from './types';
+import {
+  BookableUnit,
+  PricingTier,
+  PricingTierMap,
+  ReservableWeek,
+  Reservation,
+  UnitPricing,
+  UnitPricingMap
+} from './types';
+import {DataService} from './data-service';
+import {MatDivider} from '@angular/material/divider';
 
 interface WeekRow {
   startDate: Date;
@@ -47,22 +61,37 @@ interface WeekReservation {
     MatHeaderRow,
     ShortDate,
     NgForOf,
+    MatFooterCellDef,
+    MatFooterCell,
+    MatFooterRow,
+    MatFooterRowDef,
+    KeyValuePipe,
+    MatDivider,
+    CurrencyPipe,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
 })
 export class WeekTableComponent {
+  private readonly dataService = inject(DataService);
+
   // Input fields
   private _reservations: Reservation[] = [];
   private _pricingTiers: PricingTierMap = {};
   private _units: BookableUnit[] = [];
   private _weeks: ReservableWeek[] = [];
+  private _unitPricing: UnitPricingMap = {};
 
   // Main table fields
   tableRows$: Observable<WeekRow[]> = of([])
   displayedColumns: string[] = [];
 
   buildTableRows(weeks: ReservableWeek[], units: BookableUnit[], pricingTiers: PricingTierMap, reservations: Reservation[]): Observable<WeekRow[]> {
+    // Don't render table rows until all data is available.
+    if (!weeks.length || !units.length || !Object.keys(pricingTiers).length || !reservations.length) {
+      return of([]);
+    }
+
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     return of(
       weeks.map(week => {
@@ -99,6 +128,8 @@ export class WeekTableComponent {
     );
   }
 
+  // Input functions
+
   @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
@@ -121,17 +152,36 @@ export class WeekTableComponent {
     this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
   }
 
+  get pricingTiers() {
+    return this._pricingTiers;
+  }
+
   @Input()
   set reservations(value: Reservation[]) {
     this._reservations = value;
     this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
   }
 
+  @Input()
+  set unitPricing(value: UnitPricingMap) {
+    this._unitPricing = value;
+    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+  }
+
   // Helper functions
 
-  rowStyle(row: WeekRow) {
-    if (row.pricingTier) {
-      const colorRgb = row.pricingTier.color.join(' ');
+  unitTierPricing(unit: BookableUnit, pricingTier: PricingTier): (UnitPricing | undefined) {
+    const unitPricing = this._unitPricing[unit.id];
+    if (!unitPricing) {
+      return undefined;
+    }
+
+    return unitPricing.find(it => it.tierId === pricingTier.id);
+  }
+
+  rowStyle(pricingTier: PricingTier) {
+    if (pricingTier) {
+      const colorRgb = pricingTier.color.join(' ');
       return `background-color: rgb(${colorRgb} / 0.05)`;
     } else {
       return '';

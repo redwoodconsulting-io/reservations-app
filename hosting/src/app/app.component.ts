@@ -1,12 +1,12 @@
 import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
+import {Firestore} from '@angular/fire/firestore';
 import {AsyncPipe, NgForOf} from '@angular/common';
 import {AuthComponent} from './auth/auth.component';
 import {Auth, user} from '@angular/fire/auth';
-import {map, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
-import {BookableUnit, ConfigData, PricingTier, Reservation, ReservableWeek} from './types';
+import {BookableUnit, PricingTier, ReservableWeek, Reservation, UnitPricingMap} from './types';
 import {DataService} from './data-service';
 
 
@@ -25,6 +25,7 @@ import {DataService} from './data-service';
 })
 export class AppComponent {
   private readonly auth = inject(Auth);
+  protected readonly dataService;
   user$ = user(this.auth);
   private readonly firestore = inject(Firestore);
 
@@ -34,10 +35,13 @@ export class AppComponent {
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
   pricingTiers$: Observable<{ [key: string]: PricingTier }>;
+  unitPricing$: Observable<UnitPricingMap>;
 
   constructor(dataService: DataService) {
+    this.dataService = dataService;
     this.pricingTiers$ = dataService.pricingTiers$;
     this.reservations$ = dataService.reservations$;
+    this.unitPricing$ = dataService.unitPricing$;
     this.units$ = dataService.units$;
     this.weeks$ = dataService.weeks$;
   }
