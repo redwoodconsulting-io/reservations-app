@@ -9,6 +9,7 @@ import {ɵzoneWrap} from "@angular/fire";
 import {LoginDialog} from './login-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MatError} from '@angular/material/form-field';
+import {ANIMATION_SETTINGS} from '../app.config';
 
 // TODO bring this to RxFire
 function _authState(auth: Auth): Observable<User | null> {
@@ -90,13 +91,9 @@ export class AuthComponent implements OnDestroy {
   }
 
   login() {
-    const enterAnimationDuration = "250ms";
-    const exitAnimationDuration = "250ms";
-
     const dialogRef = this.dialog.open(LoginDialog, {
       width: '250px',
-      enterAnimationDuration,
-      exitAnimationDuration,
+      ...ANIMATION_SETTINGS,
     });
 
     dialogRef.afterClosed().subscribe(result => {

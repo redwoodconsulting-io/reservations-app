@@ -13,6 +13,11 @@ import {DialogService} from './utility/dialog-service';
 import {MatDialog} from '@angular/material/dialog';
 import {provideLuxonDateAdapter} from '@angular/material-luxon-adapter';
 
+export const ANIMATION_SETTINGS = {
+  enterAnimationDuration: "250ms",
+  exitAnimationDuration: "250ms",
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({eventCoalescing: true}),

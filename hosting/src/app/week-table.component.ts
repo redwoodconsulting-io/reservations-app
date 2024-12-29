@@ -31,7 +31,10 @@ import {DataService} from './data-service';
 import {MatDivider} from '@angular/material/divider';
 import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
+import {ReserveDialog} from './reservations/reserve-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
 import {DateTime} from 'luxon';
+import {ANIMATION_SETTINGS} from './app.config';
 
 interface WeekRow {
   startDate: DateTime;
@@ -79,6 +82,7 @@ interface WeekReservation {
 })
 export class WeekTableComponent {
   private readonly dataService = inject(DataService);
+  private readonly dialog = inject(MatDialog);
 
   // Input fields
   private _reservations: Reservation[] = [];
@@ -173,6 +177,14 @@ export class WeekTableComponent {
   }
 
   // Helper functions
+
+  addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
+    const dialogRef = this.dialog.open(ReserveDialog, {
+      data: {unit, tier, weekStartDate, weekEndDate},
+      width: '250px',
+      ...ANIMATION_SETTINGS,
+    });
+  }
 
   unitTierPricing(unit: BookableUnit, pricingTier: PricingTier): (UnitPricing | undefined) {
     const unitPricing = this._unitPricing[unit.id];
