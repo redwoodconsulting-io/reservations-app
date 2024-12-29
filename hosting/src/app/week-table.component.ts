@@ -35,6 +35,7 @@ import {ReserveDialog} from './reservations/reserve-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {DateTime} from 'luxon';
 import {ANIMATION_SETTINGS} from './app.config';
+import {ErrorDialog} from './utility/error-dialog.component';
 
 interface WeekRow {
   startDate: DateTime;
@@ -184,6 +185,29 @@ export class WeekTableComponent {
       width: '250px',
       ...ANIMATION_SETTINGS,
     });
+
+    dialogRef.componentInstance.reservation.subscribe((reservation: Reservation) => {
+      this.submitReservation(reservation);
+      dialogRef.close();
+    });
+  }
+
+  submitReservation(reservation: Reservation) {
+    let errors: string[] = [];
+
+    if (!reservation.guestName) {
+      errors.push("Guest name is required.");
+    }
+    if (reservation.endDate < reservation.startDate) {
+      errors.push("End date must be after start date.");
+    }
+
+    if (errors.length) {
+      this.dialog.open(ErrorDialog, {data: errors.join(' '), ...ANIMATION_SETTINGS});
+      return;
+    }
+
+    // Send it to the server!
   }
 
   unitTierPricing(unit: BookableUnit, pricingTier: PricingTier): (UnitPricing | undefined) {

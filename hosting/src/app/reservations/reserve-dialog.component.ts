@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostListener, Inject, inject, model,} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, Inject, inject, model, output,} from '@angular/core';
 import {MatButton} from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -11,7 +11,7 @@ import {
 import {FormsModule} from '@angular/forms';
 import {MatFormField, MatHint, MatLabel} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
-import {BookableUnit, PricingTier} from '../types';
+import {BookableUnit, PricingTier, Reservation} from '../types';
 import {
   MatDatepicker,
   MatDatepickerInput,
@@ -67,6 +67,8 @@ export class ReserveDialog {
   unit: BookableUnit;
   tier: PricingTier;
 
+  reservation = output<Reservation>();
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: ReserveDialogData) {
     this.unit = data.unit;
     this.tier = data.tier;
@@ -80,5 +82,19 @@ export class ReserveDialog {
   @HostListener('window:keyup.Enter', ['$event'])
   onDialogClick(_event: KeyboardEvent): void {
     this.dialogRef.close({});
+  }
+
+  isValid(): boolean {
+    return this.guestName().length > 0 &&
+      this.reservationStartDate <= this.reservationEndDate;
+  }
+
+  onSubmit(): void {
+    this.reservation.emit({
+      startDate: this.reservationStartDate().toISODate(),
+      endDate: this.reservationEndDate().toISODate(),
+      unitId: this.unit.id,
+      guestName: this.guestName(),
+    });
   }
 }

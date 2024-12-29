@@ -41,6 +41,9 @@ $reservations-app-theme: mat.define-theme((
 .secondary-button {
   @include mat.button-color($reservations-app-theme, $color-variant: secondary);
 }
+.error-button {
+  @include mat.button-color($reservations-app-theme, $color-variant: error);
+}
 
 html, body {
   height: 100%;
