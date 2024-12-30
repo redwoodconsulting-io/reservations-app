@@ -211,6 +211,10 @@ export class WeekTableComponent {
     });
   }
 
+  canEditReservation(reservation: WeekReservation): boolean {
+    return true;
+  }
+
   editReservation(reservation: WeekReservation, week: WeekRow) {
     const unit = reservation.unit;
     const tier = week.pricingTier;
