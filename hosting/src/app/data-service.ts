@@ -11,7 +11,18 @@ import {
   UnitPricing,
   UnitPricingMap
 } from './types';
-import {addDoc, collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
+import {
+  addDoc,
+  collection,
+  collectionData,
+  deleteDoc,
+  doc,
+  Firestore,
+  limit,
+  query,
+  updateDoc,
+  where
+} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +36,8 @@ export class DataService {
   units$: Observable<BookableUnit[]>;
   unitPricing$: Observable<UnitPricingMap>;
   weeks$: Observable<ReservableWeek[]>;
+
+  private readonly reservationsCollection;
 
   // Eventually, this will be dynamic…
   configYear = 2025;
@@ -53,8 +66,15 @@ export class DataService {
       )
     );
 
-    const reservationsCollection = collection(firestore, 'reservations');
-    const reservationsQuery = query(reservationsCollection, where('startDate', '>=', String(this.configYear)), where('endDate', '<', String(this.configYear + 1)));
+    this.reservationsCollection = collection(firestore, 'reservations').withConverter<Reservation>({
+      fromFirestore: snapshot => {
+        const {startDate, endDate, unitId, guestName, bookerId} = snapshot.data();
+        const {id} = snapshot;
+        return {id, startDate, endDate, unitId, guestName, bookerId};
+      },
+      toFirestore: (it: any) => it,
+    });
+    const reservationsQuery = query(this.reservationsCollection, where('startDate', '>=', String(this.configYear)), where('endDate', '<', String(this.configYear + 1)));
     this.reservations$ = collectionData(reservationsQuery).pipe() as Observable<Reservation[]>;
 
     const bookersCollection = collection(firestore, 'bookers').withConverter<Booker>({
@@ -104,6 +124,26 @@ export class DataService {
   }
 
   addReservation(reservation: Reservation) {
+    if (reservation.id) {
+      throw new Error('Reservation ID must not be set.');
+    }
     return addDoc(collection(this.firestore, 'reservations'), reservation);
+  }
+
+  updateReservation(reservation: Reservation) {
+    if (!reservation.id) {
+      throw new Error('Reservation ID must be set.');
+    }
+    const reservationsCollection = collection(this.firestore, 'reservations');
+    const existingRef = doc(reservationsCollection, reservation.id);
+    return updateDoc(existingRef, {...reservation});
+  }
+
+  deleteReservation(reservationId: string) {
+    if (!reservationId) {
+      throw new Error('Reservation ID must be set.');
+    }
+    const existingRef = doc(this.reservationsCollection, reservationId);
+    return deleteDoc(existingRef);
   }
 }

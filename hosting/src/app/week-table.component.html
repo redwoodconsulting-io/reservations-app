@@ -25,14 +25,14 @@
             {{ reservation.guestName }} ({{ bookerName(reservation.bookerId) || 'unknown' }})
           </span>
           <span class="mat-button-small" style="float: right">
-            <button mat-icon-button>
-              <mat-icon aria-label="Edit">edit</mat-icon>
+            <button mat-icon-button aria-label="Edit reservation" (click)="editReservation(reservation, weekRow)">
+              <mat-icon>edit</mat-icon>
             </button>
           </span>
         </div>
       } @else {
         <div class="add-button">
-          <button mat-icon-button
+          <button mat-icon-button aria-label="Add reservation"
                   (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
             <mat-icon class="material-icons-outlined">add_box</mat-icon>
           </button>

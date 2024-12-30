@@ -9,7 +9,7 @@ import {
   MatDialogTitle,
 } from '@angular/material/dialog';
 import {FormsModule} from '@angular/forms';
-import {MatFormField, MatHint, MatLabel} from '@angular/material/form-field';
+import {MatFormField, MatLabel} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
 import {BookableUnit, Booker, PricingTier, Reservation, UnitPricing} from '../types';
 import {
@@ -20,7 +20,6 @@ import {
 } from '@angular/material/datepicker';
 import {MatLuxonDateModule} from '@angular/material-luxon-adapter';
 import {DateTime} from 'luxon';
-import {MatIcon} from '@angular/material/icon';
 import {CurrencyPipe} from "../utility/currency-pipe";
 import {MatOption, MatSelect} from '@angular/material/select';
 
@@ -31,6 +30,11 @@ interface ReserveDialogData {
   unitPricing: UnitPricing[];
   weekStartDate: DateTime;
   weekEndDate: DateTime;
+  startDate?: DateTime;
+  endDate?: DateTime;
+  initialGuestName?: string;
+  initialBookerId?: string;
+  existingReservationId?: string;
 }
 
 @Component({
@@ -45,7 +49,6 @@ interface ReserveDialogData {
     MatDialogClose,
     MatButton,
     MatInput,
-    MatHint,
     MatLabel,
     MatDialogTitle,
     FormsModule,
@@ -55,7 +58,6 @@ interface ReserveDialogData {
     MatDatepicker,
     MatLuxonDateModule,
     MatInputModule,
-    MatIcon,
     CurrencyPipe,
     MatSelect,
     MatOption,
@@ -72,12 +74,14 @@ export class ReserveDialog {
   guestName = model('');
   bookerId = model('');
 
+  readonly existingReservationId: string | undefined;
   readonly bookers: Booker[];
   readonly unit: BookableUnit;
   readonly tier: PricingTier;
   readonly unitPricing: UnitPricing[];
 
   reservation = output<Reservation>();
+  deleteReservation = output<void>();
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: ReserveDialogData) {
     this.unit = data.unit;
@@ -87,8 +91,12 @@ export class ReserveDialog {
 
     this.weekStartDate = data.weekStartDate;
     this.weekEndDate = data.weekEndDate;
-    this.reservationStartDate.set(data.weekStartDate);
-    this.reservationEndDate.set(data.weekEndDate);
+
+    this.reservationStartDate.set(data.startDate || data.weekStartDate);
+    this.reservationEndDate.set(data.endDate || data.weekEndDate);
+    this.guestName.set(data.initialGuestName || '');
+    this.bookerId.set(data.initialBookerId || '');
+    this.existingReservationId = data.existingReservationId;
   }
 
   reservationCost(): number | undefined {
@@ -97,8 +105,10 @@ export class ReserveDialog {
   }
 
   @HostListener('window:keyup.Enter', ['$event'])
-  onDialogClick(_event: KeyboardEvent): void {
-    this.dialogRef.close({});
+  onKeyPress(_event: KeyboardEvent): void {
+    if (this.isValid()) {
+      this.onSubmit();
+    }
   }
 
   isValid(): boolean {
@@ -109,11 +119,18 @@ export class ReserveDialog {
 
   onSubmit(): void {
     this.reservation.emit({
+      id: this.existingReservationId || '',
       startDate: this.reservationStartDate().toISODate(),
       endDate: this.reservationEndDate().toISODate(),
       unitId: this.unit.id,
       guestName: this.guestName(),
       bookerId: this.bookerId(),
     });
+  }
+
+  onDelete(): void {
+    if (confirm("Really delete? This cannot be undone")) {
+      this.deleteReservation.emit();
+    }
   }
 }

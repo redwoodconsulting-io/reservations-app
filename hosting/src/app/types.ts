@@ -26,6 +26,7 @@ export interface ReservableWeek {
 }
 
 export interface Reservation {
+  id: string;
   startDate: string;
   endDate: string;
   unitId: string;
