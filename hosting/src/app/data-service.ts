@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {
   BookableUnit,
+  Booker,
   ConfigData,
   PricingTier,
   PricingTierMap,
@@ -17,6 +18,8 @@ import {addDoc, collection, collectionData, Firestore, limit, query, where} from
 })
 export class DataService {
   private readonly firestore: Firestore;
+
+  bookers$: Observable<Booker[]>;
   pricingTiers$: Observable<PricingTierMap>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
@@ -53,6 +56,16 @@ export class DataService {
     const reservationsCollection = collection(firestore, 'reservations');
     const reservationsQuery = query(reservationsCollection, where('startDate', '>=', String(this.configYear)), where('endDate', '<', String(this.configYear + 1)));
     this.reservations$ = collectionData(reservationsQuery).pipe() as Observable<Reservation[]>;
+
+    const bookersCollection = collection(firestore, 'bookers').withConverter<Booker>({
+      fromFirestore: snapshot => {
+        const {name} = snapshot.data();
+        const {id} = snapshot;
+        return {id, name};
+      },
+      toFirestore: (it: any) => it,
+    });
+    this.bookers$ = collectionData(bookersCollection).pipe();
 
     // Get the bookable unit documents … with the ID field.
     const bookableUnitsCollection = collection(firestore, 'units').withConverter<BookableUnit>({

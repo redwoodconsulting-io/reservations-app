@@ -4,6 +4,7 @@
   @if (user$ | async) {
     Year: {{ dataService.configYear }}
     <week-table
+      [bookers]="(bookers$ | async) || []"
       [weeks]="(weeks$ | async) || []"
       [units]="(units$ | async) || []"
       [pricingTiers]="(pricingTiers$ | async) || {}"
