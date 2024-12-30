@@ -34,8 +34,8 @@
             {{ tier.name }}
           </td>
           <td class="mat-mdc-cell">
-            {{ (unitTierPricing(unit, tier)?.weeklyPrice | currency: "USD" : "symbol" : "1.0-0") || '–' }}/wk<br/>
-            {{ (unitTierPricing(unit, tier)?.dailyPrice | currency: "USD" : "symbol" : "1.0-0") || '–' }}/day
+            {{ unitTierPricing(unit, tier)?.weeklyPrice | currency }}/wk<br/>
+            {{ unitTierPricing(unit, tier)?.dailyPrice | currency }}/day
           </td>
         </tr>
       </table>

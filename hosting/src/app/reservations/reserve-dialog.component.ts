@@ -11,7 +11,7 @@ import {
 import {FormsModule} from '@angular/forms';
 import {MatFormField, MatHint, MatLabel} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
-import {BookableUnit, PricingTier, Reservation} from '../types';
+import {BookableUnit, PricingTier, Reservation, UnitPricing} from '../types';
 import {
   MatDatepicker,
   MatDatepickerInput,
@@ -21,10 +21,12 @@ import {
 import {MatLuxonDateModule} from '@angular/material-luxon-adapter';
 import {DateTime} from 'luxon';
 import {MatIcon} from '@angular/material/icon';
+import {CurrencyPipe} from "../utility/currency-pipe";
 
 interface ReserveDialogData {
   unit: BookableUnit;
   tier: PricingTier;
+  unitPricing: UnitPricing[];
   weekStartDate: DateTime;
   weekEndDate: DateTime;
 }
@@ -52,6 +54,7 @@ interface ReserveDialogData {
     MatLuxonDateModule,
     MatInputModule,
     MatIcon,
+    CurrencyPipe,
   ]
 })
 export class ReserveDialog {
@@ -64,19 +67,26 @@ export class ReserveDialog {
   reservationEndDate = model(DateTime.now());
   guestName = model('');
 
-  unit: BookableUnit;
-  tier: PricingTier;
+  readonly unit: BookableUnit;
+  readonly tier: PricingTier;
+  readonly unitPricing: UnitPricing[];
 
   reservation = output<Reservation>();
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: ReserveDialogData) {
     this.unit = data.unit;
     this.tier = data.tier;
+    this.unitPricing = data.unitPricing;
 
     this.weekStartDate = data.weekStartDate;
     this.weekEndDate = data.weekEndDate;
     this.reservationStartDate.set(data.weekStartDate);
     this.reservationEndDate.set(data.weekEndDate);
+  }
+
+  reservationCost(): number | undefined {
+    const applicablePricing = this.unitPricing.find(it => it.tierId === this.tier.id);
+    return applicablePricing?.weeklyPrice;
   }
 
   @HostListener('window:keyup.Enter', ['$event'])
