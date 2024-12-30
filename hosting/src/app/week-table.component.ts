@@ -21,6 +21,7 @@ import {Observable, of} from 'rxjs';
 import {
   BookableUnit,
   Booker,
+  Permissions,
   PricingTier,
   PricingTierMap,
   ReservableWeek,
@@ -37,6 +38,7 @@ import {DateTime} from 'luxon';
 import {ANIMATION_SETTINGS} from './app.config';
 import {ErrorDialog} from './utility/error-dialog.component';
 import {CurrencyPipe} from './utility/currency-pipe';
+import {Auth} from '@angular/fire/auth';
 
 interface WeekRow {
   startDate: DateTime;
@@ -83,12 +85,15 @@ interface WeekReservation {
   styleUrl: './week-table.component.css'
 })
 export class WeekTableComponent {
+  private readonly auth = inject(Auth);
   private readonly dataService = inject(DataService);
   private readonly dialog = inject(MatDialog);
 
   // Input fields
   private _bookers: Booker[] = [];
+  private _currentBooker: Booker | undefined;
   private _reservations: Reservation[] = [];
+  private _permissions: Permissions = {adminUserIds: []};
   private _pricingTiers: PricingTierMap = {};
   private _units: BookableUnit[] = [];
   private _weeks: ReservableWeek[] = [];
@@ -99,15 +104,18 @@ export class WeekTableComponent {
   displayedColumns: string[] = [];
 
   buildTableRows(): Observable<WeekRow[]> {
+    const currentBooker = this._currentBooker;
     const weeks = this._weeks;
     const units = this._units;
+    const permissions = this._permissions;
     const pricingTiers = this._pricingTiers;
     const reservations = this._reservations;
     const bookers = this._bookers;
     const unitPricing = this._unitPricing;
 
     // Don't render table rows until all data is available.
-    if (!weeks.length || !units.length || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
+    // Exception: allow no current booker if admin.
+    if (!weeks.length || !(currentBooker || this.isAdmin()) || !units.length || !permissions || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
       return of([]);
     }
 
@@ -156,6 +164,11 @@ export class WeekTableComponent {
     this.tableRows$ = this.buildTableRows();
   }
 
+  @Input() set currentBooker(value: Booker | undefined) {
+    this._currentBooker = value;
+    this.buildTableRows()
+  }
+
   @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
@@ -170,6 +183,12 @@ export class WeekTableComponent {
   set weeks(value: ReservableWeek[]) {
     this._weeks = value;
     this.tableRows$ = this.buildTableRows();
+  }
+
+  @Input()
+  set permissions(value: Permissions) {
+    this._permissions = value;
+    this.buildTableRows();
   }
 
   @Input()
@@ -196,12 +215,21 @@ export class WeekTableComponent {
 
   // Helper functions
 
+  availableBookers(): Booker[] {
+    const currentBooker = this._currentBooker;
+    const bookers = this._bookers;
+
+    return bookers.filter(booker => {
+      return this.isAdmin() || booker.userId === currentBooker?.userId;
+    });
+  }
+
   addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
     const unitPricing = this._unitPricing[unit.id] || [];
     const bookers = this._bookers;
 
     const dialogRef = this.dialog.open(ReserveDialog, {
-      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers},
+      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers: this.availableBookers()},
       ...ANIMATION_SETTINGS,
     });
 
@@ -211,8 +239,16 @@ export class WeekTableComponent {
     });
   }
 
+  isAdmin(): boolean {
+    const currentUser = this.auth.currentUser?.uid || '<nobody>';
+    return this._permissions.adminUserIds.includes(currentUser);
+  }
+
   canEditReservation(reservation: WeekReservation): boolean {
-    return true;
+    if (this.isAdmin()) {
+      return true;
+    }
+    return reservation.bookerId === this._currentBooker?.id;
   }
 
   editReservation(reservation: WeekReservation, week: WeekRow) {
@@ -221,7 +257,7 @@ export class WeekTableComponent {
     const weekStartDate = week.startDate;
     const weekEndDate = week.endDate;
     const unitPricing = this._unitPricing[unit.id] || [];
-    const bookers = this._bookers;
+    const bookers = this.availableBookers();
 
     const dialogRef = this.dialog.open(ReserveDialog, {
       data: {

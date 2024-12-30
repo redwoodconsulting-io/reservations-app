@@ -5,8 +5,10 @@
     Year: {{ dataService.configYear }}
     <week-table
       [bookers]="(bookers$ | async) || []"
+      [currentBooker]="(currentBooker$ | async) || undefined"
       [weeks]="(weeks$ | async) || []"
       [units]="(units$ | async) || []"
+      [permissions]="(permissions$ | async) || {adminUserIds: []}"
       [pricingTiers]="(pricingTiers$ | async) || {}"
       [reservations]="(reservations$ | async) || []"
       [unitPricing]="(unitPricing$ | async) || {}"

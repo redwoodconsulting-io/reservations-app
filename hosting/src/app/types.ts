@@ -6,11 +6,16 @@ export interface BookableUnit {
 export interface Booker {
   id: string;
   name: string;
+  userId: string;
 }
 
 export interface ConfigData {
   year: number;
   weeks: ReservableWeek[];
+}
+
+export interface Permissions {
+  adminUserIds: string[];
 }
 
 export interface PricingTier {

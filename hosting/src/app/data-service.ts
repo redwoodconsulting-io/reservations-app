@@ -1,9 +1,10 @@
-import {Injectable} from '@angular/core';
-import {map, Observable} from 'rxjs';
+import {inject, Injectable} from '@angular/core';
+import {filter, map, Observable} from 'rxjs';
 import {
   BookableUnit,
   Booker,
   ConfigData,
+  Permissions,
   PricingTier,
   PricingTierMap,
   ReservableWeek,
@@ -23,14 +24,17 @@ import {
   updateDoc,
   where
 } from '@angular/fire/firestore';
+import {Auth, user} from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
   private readonly firestore: Firestore;
+  private readonly auth = inject(Auth);
 
   bookers$: Observable<Booker[]>;
+  permissions$: Observable<Permissions>;
   pricingTiers$: Observable<PricingTierMap>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
@@ -44,6 +48,13 @@ export class DataService {
 
   constructor(firestore: Firestore) {
     this.firestore = firestore;
+
+    this.permissions$ = collectionData(
+      collection(firestore, 'permissions')
+    ).pipe(
+      filter(it => !!it),
+      map(it => it[0]),
+    ) as Observable<Permissions>;
 
     // Get the pricing tier documents … with the ID field.
     // Also, store as a map from id to pricing tier.
@@ -79,9 +90,9 @@ export class DataService {
 
     const bookersCollection = collection(firestore, 'bookers').withConverter<Booker>({
       fromFirestore: snapshot => {
-        const {name} = snapshot.data();
+        const {name, userId} = snapshot.data();
         const {id} = snapshot;
-        return {id, name};
+        return {id, name, userId};
       },
       toFirestore: (it: any) => it,
     });
@@ -121,6 +132,13 @@ export class DataService {
       map((it) => it[0] as ConfigData),
       map((it) => it?.weeks || []),
     );
+  }
+
+  currentBooker() {
+    const currentUser = this.auth.currentUser
+    return this.bookers$.pipe(
+      map(bookers => bookers.find(booker => booker.userId === currentUser?.uid))
+    )
   }
 
   addReservation(reservation: Reservation) {
