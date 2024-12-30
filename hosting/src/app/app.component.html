@@ -1,5 +1,9 @@
 <main class="main">
   <h1>{{ title }}</h1>
+  <p>Today is: {{today().toISODate()}}</p>
+  @if (isAdmin()) {
+    <today-picker [today]="today()"></today-picker>
+  }
   <app-auth/>
   @if (user$ | async) {
     Year: {{ dataService.configYear }}

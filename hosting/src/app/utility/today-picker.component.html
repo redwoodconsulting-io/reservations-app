@@ -1,0 +1,11 @@
+<div class="today-picker">
+  <div>
+    <mat-form-field>
+      <mat-label>Admin today override</mat-label>
+      <input matInput [matDatepicker]="todayPicker"
+             [(ngModel)]="today" readonly/>
+      <mat-datepicker-toggle matIconSuffix [for]="todayPicker"></mat-datepicker-toggle>
+      <mat-datepicker #todayPicker></mat-datepicker>
+    </mat-form-field>
+  </div>
+</div>
