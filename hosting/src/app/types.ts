@@ -1,6 +1,6 @@
-export interface ReservableWeek {
-  startDate: string;
-  pricingTierId: string;
+export interface BookableUnit {
+  id: string;
+  name: string;
 }
 
 export interface ConfigData {
@@ -8,9 +8,16 @@ export interface ConfigData {
   weeks: ReservableWeek[];
 }
 
-export interface BookableUnit {
+export interface PricingTier {
   id: string;
   name: string;
+  color: number[];
+}
+export type PricingTierMap = { [key: string]: PricingTier };
+
+export interface ReservableWeek {
+  startDate: string;
+  pricingTierId: string;
 }
 
 export interface Reservation {
@@ -20,14 +27,6 @@ export interface Reservation {
   guestName: string;
 }
 
-export interface PricingTier {
-  id: string;
-  name: string;
-  color: number[];
-}
-
-export type PricingTierMap = { [key: string]: PricingTier };
-
 export interface UnitPricing {
   year: number;
   tierId: string;
@@ -35,6 +34,5 @@ export interface UnitPricing {
   weeklyPrice: number;
   dailyPrice: number;
 }
-
 // Map from unit ID to array of unit pricings (identified by tiers).
 export type UnitPricingMap = { [key: string]: UnitPricing[] };
