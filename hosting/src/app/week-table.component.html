@@ -20,11 +20,23 @@
         Reserved by the day
       } @else if (unitReservations?.length === 1) {
         @let reservation = unitReservations[0];
-        {{ reservation.guestName }} ({{ bookerName(reservation.bookerId) || 'unknown' }})
+        <div>
+          <span>
+            {{ reservation.guestName }} ({{ bookerName(reservation.bookerId) || 'unknown' }})
+          </span>
+          <span class="mat-button-small" style="float: right">
+            <button mat-icon-button>
+              <mat-icon aria-label="Edit">edit</mat-icon>
+            </button>
+          </span>
+        </div>
       } @else {
-        <button mat-icon-button (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
-          <mat-icon class="material-icons-outlined">add_box</mat-icon>
-        </button>
+        <div class="add-button">
+          <button mat-icon-button
+                  (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
+            <mat-icon class="material-icons-outlined">add_box</mat-icon>
+          </button>
+        </div>
       }
     </td>
     <td mat-footer-cell *matFooterCellDef>
