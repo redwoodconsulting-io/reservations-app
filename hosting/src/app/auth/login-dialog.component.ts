@@ -24,7 +24,7 @@ export class LoginDialog {
   readonly password = model("");
 
   @HostListener('window:keyup.Enter', ['$event'])
-  onDialogClick(_event: KeyboardEvent): void {
+  onKeyPress(_event: KeyboardEvent): void {
     this.dialogRef.close({email: this.email(), password: this.password()});
   }
 }

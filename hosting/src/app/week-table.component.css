@@ -1,0 +1,9 @@
+.pricing-footer {
+  @media only screen and (max-width: 768px) {
+    display: none;
+  }
+}
+
+.add-button {
+  text-align: center;
+}
