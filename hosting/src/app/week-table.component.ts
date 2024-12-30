@@ -138,7 +138,7 @@ export class WeekTableComponent {
             endDate: new Date(Date.parse(reservation.endDate)),
             unit,
             guestName: reservation.guestName,
-            bookerId: (reservation as any).bookerId,
+            bookerId: reservation.bookerId,
           } as WeekReservation;
         });
 

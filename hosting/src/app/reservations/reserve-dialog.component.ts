@@ -95,7 +95,7 @@ export class ReserveDialog {
     this.reservationStartDate.set(data.startDate || data.weekStartDate);
     this.reservationEndDate.set(data.endDate || data.weekEndDate);
     this.guestName.set(data.initialGuestName || '');
-    this.bookerId.set(data.initialBookerId || '');
+    this.bookerId.set(data.initialBookerId || (this.bookers.length == 1 ? this.bookers[0].id : ''));
     this.existingReservationId = data.existingReservationId;
   }
 
