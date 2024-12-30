@@ -3,6 +3,11 @@ export interface BookableUnit {
   name: string;
 }
 
+export interface Booker {
+  id: string;
+  name: string;
+}
+
 export interface ConfigData {
   year: number;
   weeks: ReservableWeek[];

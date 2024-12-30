@@ -6,7 +6,7 @@ import {AuthComponent} from './auth/auth.component';
 import {Auth, user} from '@angular/fire/auth';
 import {Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
-import {BookableUnit, PricingTier, ReservableWeek, Reservation, UnitPricingMap} from './types';
+import {BookableUnit, Booker, PricingTier, ReservableWeek, Reservation, UnitPricingMap} from './types';
 import {DataService} from './data-service';
 
 
@@ -31,6 +31,7 @@ export class AppComponent {
 
   title = 'Reservations-App';
 
+  bookers$: Observable<Booker[]>;
   weeks$: Observable<ReservableWeek[]>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
@@ -39,6 +40,7 @@ export class AppComponent {
 
   constructor(dataService: DataService) {
     this.dataService = dataService;
+    this.bookers$ = dataService.bookers$;
     this.pricingTiers$ = dataService.pricingTiers$;
     this.reservations$ = dataService.reservations$;
     this.unitPricing$ = dataService.unitPricing$;

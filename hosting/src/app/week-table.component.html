@@ -19,7 +19,8 @@
       @if (unitReservations?.length > 1) {
         Reserved by the day
       } @else if (unitReservations?.length === 1) {
-        {{ unitReservations[0].guestName }}
+        @let reservation = unitReservations[0];
+        {{ reservation.guestName }} ({{ bookerName(reservation.bookerId) || 'unknown' }})
       } @else {
         <button mat-icon-button (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
           <mat-icon class="material-icons-outlined">add_box</mat-icon>

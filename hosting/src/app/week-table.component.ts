@@ -20,6 +20,7 @@ import {ShortDate} from './utility/short-date.pipe';
 import {Observable, of} from 'rxjs';
 import {
   BookableUnit,
+  Booker,
   PricingTier,
   PricingTierMap,
   ReservableWeek,
@@ -50,6 +51,7 @@ interface WeekReservation {
   endDate: Date;
   unit: BookableUnit;
   guestName: string;
+  bookerId: string;
 }
 
 @Component({
@@ -87,6 +89,7 @@ export class WeekTableComponent {
   private readonly dialog = inject(MatDialog);
 
   // Input fields
+  private _bookers: Booker[] = [];
   private _reservations: Reservation[] = [];
   private _pricingTiers: PricingTierMap = {};
   private _units: BookableUnit[] = [];
@@ -97,9 +100,16 @@ export class WeekTableComponent {
   tableRows$: Observable<WeekRow[]> = of([])
   displayedColumns: string[] = [];
 
-  buildTableRows(weeks: ReservableWeek[], units: BookableUnit[], pricingTiers: PricingTierMap, reservations: Reservation[]): Observable<WeekRow[]> {
+  buildTableRows(): Observable<WeekRow[]> {
+    const weeks = this._weeks;
+    const units = this._units;
+    const pricingTiers = this._pricingTiers;
+    const reservations = this._reservations;
+    const bookers = this._bookers;
+    const unitPricing = this._unitPricing;
+
     // Don't render table rows until all data is available.
-    if (!weeks.length || !units.length || !Object.keys(pricingTiers).length || !reservations.length) {
+    if (!weeks.length || !units.length || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
       return of([]);
     }
 
@@ -120,7 +130,8 @@ export class WeekTableComponent {
             startDate: new Date(Date.parse(reservation.startDate)),
             endDate: new Date(Date.parse(reservation.endDate)),
             unit,
-            guestName: reservation.guestName
+            guestName: reservation.guestName,
+            bookerId: (reservation as any).bookerId,
           } as WeekReservation;
         });
 
@@ -141,9 +152,15 @@ export class WeekTableComponent {
   // Input functions
 
   @Input()
+  set bookers(value: Booker[]) {
+    this._bookers = value;
+    this.tableRows$ = this.buildTableRows();
+  }
+
+  @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
-    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+    this.tableRows$ = this.buildTableRows();
   }
 
   get units() {
@@ -153,13 +170,13 @@ export class WeekTableComponent {
   @Input()
   set weeks(value: ReservableWeek[]) {
     this._weeks = value;
-    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+    this.tableRows$ = this.buildTableRows();
   }
 
   @Input()
   set pricingTiers(value: PricingTierMap) {
     this._pricingTiers = value;
-    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+    this.tableRows$ = this.buildTableRows();
   }
 
   get pricingTiers() {
@@ -169,13 +186,13 @@ export class WeekTableComponent {
   @Input()
   set reservations(value: Reservation[]) {
     this._reservations = value;
-    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+    this.tableRows$ = this.buildTableRows();
   }
 
   @Input()
   set unitPricing(value: UnitPricingMap) {
     this._unitPricing = value;
-    this.tableRows$ = this.buildTableRows(this._weeks, this._units, this._pricingTiers, this._reservations);
+    this.tableRows$ = this.buildTableRows();
   }
 
   // Helper functions
@@ -223,6 +240,11 @@ export class WeekTableComponent {
     }
 
     return unitPricing.find(it => it.tierId === pricingTier.id);
+  }
+
+  bookerName(bookerId: string): string | undefined {
+    const booker = this._bookers.find(it => it.id === bookerId);
+    return booker?.name;
   }
 
   rowStyle(pricingTier: PricingTier) {
