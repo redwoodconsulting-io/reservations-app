@@ -1,5 +1,5 @@
 import {Component, inject, Input} from '@angular/core';
-import {AsyncPipe, CurrencyPipe, KeyValuePipe, NgForOf} from '@angular/common';
+import {AsyncPipe, KeyValuePipe, NgForOf} from '@angular/common';
 import {
   MatCell,
   MatCellDef,
@@ -36,6 +36,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {DateTime} from 'luxon';
 import {ANIMATION_SETTINGS} from './app.config';
 import {ErrorDialog} from './utility/error-dialog.component';
+import {CurrencyPipe} from './utility/currency-pipe';
 
 interface WeekRow {
   startDate: DateTime;
