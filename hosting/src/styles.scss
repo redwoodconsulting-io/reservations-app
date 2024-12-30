@@ -35,6 +35,16 @@ $reservations-app-theme: mat.define-theme((
 // @include mat.color-variants-backwards-compatibility($reservations-app-theme);
 /* You can add global styles to this file, and also import other style files */
 
+.primary-button {
+  @include mat.button-color($reservations-app-theme, $color-variant: primary);
+}
+.secondary-button {
+  @include mat.button-color($reservations-app-theme, $color-variant: secondary);
+}
+.error-button {
+  @include mat.button-color($reservations-app-theme, $color-variant: error);
+}
+
 html, body {
   height: 100%;
   font-family: Roboto, "Helvetica Neue", sans-serif;

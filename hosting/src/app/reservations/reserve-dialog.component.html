@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Make a reservation</h2>
+<mat-dialog-content>
+  <div>
+    <mat-form-field>
+      <mat-label>Unit</mat-label>
+      <input matInput value="{{unit.name}}" readonly="true"/>
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field>
+      <mat-label>Start date</mat-label>
+      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="startPicker"
+             [(ngModel)]="reservationStartDate" readonly/>
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker" disabled></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+      <mat-error>Invalid date</mat-error>
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field>
+      <mat-label>End date</mat-label>
+      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="endPicker"
+             [(ngModel)]="reservationEndDate" readonly/>
+      <mat-datepicker-toggle matIconSuffix [for]="endPicker" disabled></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+      <mat-error>Invalid date</mat-error>
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field>
+      <mat-label>Guest</mat-label>
+      <input matInput [(ngModel)]="guestName" required/>
+      <mat-error>Name is required</mat-error>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button class="secondary-button" [mat-dialog-close]="null">Cancel</button>
+  <button mat-button class="primary-button" (click)="onSubmit()" [disabled]="!isValid()">Reserve</button>
+</mat-dialog-actions>

@@ -29,10 +29,17 @@ import {
 } from './types';
 import {DataService} from './data-service';
 import {MatDivider} from '@angular/material/divider';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
+import {ReserveDialog} from './reservations/reserve-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {DateTime} from 'luxon';
+import {ANIMATION_SETTINGS} from './app.config';
+import {ErrorDialog} from './utility/error-dialog.component';
 
 interface WeekRow {
-  startDate: Date;
-  endDate: Date;
+  startDate: DateTime;
+  endDate: DateTime;
   pricingTier: PricingTier;
   reservations: { [key: string]: WeekReservation[] };
 }
@@ -68,12 +75,15 @@ interface WeekReservation {
     KeyValuePipe,
     MatDivider,
     CurrencyPipe,
+    MatIconButton,
+    MatIcon,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
 })
 export class WeekTableComponent {
   private readonly dataService = inject(DataService);
+  private readonly dialog = inject(MatDialog);
 
   // Input fields
   private _reservations: Reservation[] = [];
@@ -95,14 +105,13 @@ export class WeekTableComponent {
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     return of(
       weeks.map(week => {
-        const startDate = new Date(Date.parse(week.startDate));
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 7);
+        const startDate = DateTime.fromISO(week.startDate);
+        const endDate = startDate.plus({days: 7});
         const pricingTier = pricingTiers[week.pricingTierId];
 
         const weekReservations = reservations.filter(reservation => {
-          const reservationStartDate = new Date(Date.parse(reservation.startDate));
-          const reservationEndDate = new Date(Date.parse(reservation.endDate));
+          const reservationStartDate = DateTime.fromISO(reservation.startDate);
+          const reservationEndDate = DateTime.fromISO(reservation.endDate);
           return reservationStartDate >= startDate && reservationEndDate <= endDate;
         }).map(reservation => {
           const unit = units.find(unit => unit.id === reservation.unitId);
@@ -169,6 +178,40 @@ export class WeekTableComponent {
   }
 
   // Helper functions
+
+  addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
+    const dialogRef = this.dialog.open(ReserveDialog, {
+      data: {unit, tier, weekStartDate, weekEndDate},
+      ...ANIMATION_SETTINGS,
+    });
+
+    dialogRef.componentInstance.reservation.subscribe((reservation: Reservation) => {
+      this.submitReservation(reservation);
+      dialogRef.close();
+    });
+  }
+
+  submitReservation(reservation: Reservation) {
+    let errors: string[] = [];
+
+    if (!reservation.guestName) {
+      errors.push("Guest name is required.");
+    }
+    if (reservation.endDate < reservation.startDate) {
+      errors.push("End date must be after start date.");
+    }
+
+    if (errors.length) {
+      this.dialog.open(ErrorDialog, {data: errors.join(' '), ...ANIMATION_SETTINGS});
+      return;
+    }
+
+    this.dataService.addReservation(reservation).then(() => {
+      console.log('Reservation submitted');
+    }).catch((error) => {
+      this.dialog.open(ErrorDialog, {data: `Couldn't save reservation: ${error.message}`, ...ANIMATION_SETTINGS});
+    });
+  }
 
   unitTierPricing(unit: BookableUnit, pricingTier: PricingTier): (UnitPricing | undefined) {
     const unitPricing = this._unitPricing[unit.id];
