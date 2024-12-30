@@ -33,6 +33,9 @@
       <mat-error>Name is required</mat-error>
     </mat-form-field>
   </div>
+  <div>
+    Reservation cost: {{ reservationCost() | currency }}
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button class="secondary-button" [mat-dialog-close]="null">Cancel</button>

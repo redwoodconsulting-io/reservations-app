@@ -181,8 +181,10 @@ export class WeekTableComponent {
   // Helper functions
 
   addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
+    const unitPricing = this._unitPricing[unit.id] || [];
+
     const dialogRef = this.dialog.open(ReserveDialog, {
-      data: {unit, tier, weekStartDate, weekEndDate},
+      data: {unit, tier, weekStartDate, weekEndDate, unitPricing},
       ...ANIMATION_SETTINGS,
     });
 

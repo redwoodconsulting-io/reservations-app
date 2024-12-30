@@ -36,4 +36,5 @@ export interface UnitPricing {
   dailyPrice: number;
 }
 
+// Map from unit ID to array of unit pricings (identified by tiers).
 export type UnitPricingMap = { [key: string]: UnitPricing[] };
