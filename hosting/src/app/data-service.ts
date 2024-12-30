@@ -1,4 +1,4 @@
-import {Injectable, Signal} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {
   BookableUnit,
@@ -10,12 +10,13 @@ import {
   UnitPricing,
   UnitPricingMap
 } from './types';
-import {collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
+import {addDoc, collection, collectionData, Firestore, limit, query, where} from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
+  private readonly firestore: Firestore;
   pricingTiers$: Observable<PricingTierMap>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
@@ -26,6 +27,8 @@ export class DataService {
   configYear = 2025;
 
   constructor(firestore: Firestore) {
+    this.firestore = firestore;
+
     // Get the pricing tier documents … with the ID field.
     // Also, store as a map from id to pricing tier.
     const pricingTiersCollection = collection(firestore, 'pricingTiers').withConverter<PricingTier>({
@@ -85,5 +88,9 @@ export class DataService {
       map((it) => it[0] as ConfigData),
       map((it) => it?.weeks || []),
     );
+  }
+
+  addReservation(reservation: Reservation) {
+    return addDoc(collection(this.firestore, 'reservations'), reservation);
   }
 }

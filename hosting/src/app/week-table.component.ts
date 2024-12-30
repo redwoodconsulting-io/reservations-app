@@ -206,7 +206,11 @@ export class WeekTableComponent {
       return;
     }
 
-    // Send it to the server!
+    this.dataService.addReservation(reservation).then(() => {
+      console.log('Reservation submitted');
+    }).catch((error) => {
+      this.dialog.open(ErrorDialog, {data: `Couldn't save reservation: ${error.message}`, ...ANIMATION_SETTINGS});
+    });
   }
 
   unitTierPricing(unit: BookableUnit, pricingTier: PricingTier): (UnitPricing | undefined) {
