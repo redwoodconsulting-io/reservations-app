@@ -34,6 +34,16 @@
     </mat-form-field>
   </div>
   <div>
+    <mat-form-field>
+      <mat-label>Booked by</mat-label>
+      <mat-select [(ngModel)]="bookerId" required>
+        @for (booker of bookers; track booker.id) {
+          <mat-option [value]="booker.id">{{ booker.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div>
     Reservation cost: {{ reservationCost() | currency }}
   </div>
 </mat-dialog-content>

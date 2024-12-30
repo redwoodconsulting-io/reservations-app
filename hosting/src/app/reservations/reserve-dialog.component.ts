@@ -11,7 +11,7 @@ import {
 import {FormsModule} from '@angular/forms';
 import {MatFormField, MatHint, MatLabel} from '@angular/material/form-field';
 import {MatInput, MatInputModule} from '@angular/material/input';
-import {BookableUnit, PricingTier, Reservation, UnitPricing} from '../types';
+import {BookableUnit, Booker, PricingTier, Reservation, UnitPricing} from '../types';
 import {
   MatDatepicker,
   MatDatepickerInput,
@@ -22,8 +22,10 @@ import {MatLuxonDateModule} from '@angular/material-luxon-adapter';
 import {DateTime} from 'luxon';
 import {MatIcon} from '@angular/material/icon';
 import {CurrencyPipe} from "../utility/currency-pipe";
+import {MatOption, MatSelect} from '@angular/material/select';
 
 interface ReserveDialogData {
+  bookers: Booker[];
   unit: BookableUnit;
   tier: PricingTier;
   unitPricing: UnitPricing[];
@@ -55,6 +57,8 @@ interface ReserveDialogData {
     MatInputModule,
     MatIcon,
     CurrencyPipe,
+    MatSelect,
+    MatOption,
   ]
 })
 export class ReserveDialog {
@@ -66,7 +70,9 @@ export class ReserveDialog {
   reservationStartDate = model(DateTime.now());
   reservationEndDate = model(DateTime.now());
   guestName = model('');
+  bookerId = model('');
 
+  readonly bookers: Booker[];
   readonly unit: BookableUnit;
   readonly tier: PricingTier;
   readonly unitPricing: UnitPricing[];
@@ -77,6 +83,7 @@ export class ReserveDialog {
     this.unit = data.unit;
     this.tier = data.tier;
     this.unitPricing = data.unitPricing;
+    this.bookers = data.bookers;
 
     this.weekStartDate = data.weekStartDate;
     this.weekEndDate = data.weekEndDate;
@@ -85,7 +92,7 @@ export class ReserveDialog {
   }
 
   reservationCost(): number | undefined {
-    const applicablePricing = this.unitPricing.find(it => it.tierId === this.tier.id);
+    const applicablePricing = this.unitPricing.find(it => it.tierId === this.tier?.id);
     return applicablePricing?.weeklyPrice;
   }
 
@@ -96,7 +103,8 @@ export class ReserveDialog {
 
   isValid(): boolean {
     return this.guestName().length > 0 &&
-      this.reservationStartDate <= this.reservationEndDate;
+      this.reservationStartDate <= this.reservationEndDate &&
+      !!this.bookerId();
   }
 
   onSubmit(): void {
@@ -105,6 +113,7 @@ export class ReserveDialog {
       endDate: this.reservationEndDate().toISODate(),
       unitId: this.unit.id,
       guestName: this.guestName(),
+      bookerId: this.bookerId(),
     });
   }
 }

@@ -30,6 +30,7 @@ export interface Reservation {
   endDate: string;
   unitId: string;
   guestName: string;
+  bookerId: string;
 }
 
 export interface UnitPricing {

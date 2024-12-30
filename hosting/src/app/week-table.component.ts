@@ -199,9 +199,10 @@ export class WeekTableComponent {
 
   addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
     const unitPricing = this._unitPricing[unit.id] || [];
+    const bookers = this._bookers;
 
     const dialogRef = this.dialog.open(ReserveDialog, {
-      data: {unit, tier, weekStartDate, weekEndDate, unitPricing},
+      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers},
       ...ANIMATION_SETTINGS,
     });
 
@@ -219,6 +220,9 @@ export class WeekTableComponent {
     }
     if (reservation.endDate < reservation.startDate) {
       errors.push("End date must be after start date.");
+    }
+    if (!reservation.bookerId) {
+      errors.push("Booker is required.");
     }
 
     if (errors.length) {
