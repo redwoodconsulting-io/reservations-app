@@ -47,14 +47,14 @@ export interface ReservationRound {
   name: string;
   startDate: DateTime;
   endDate: DateTime;
-  bookerOrder: string[];
+  subRoundBookerIds: string[];
 }
 
 export interface ReservationRoundDefinition {
   position: number;
   name: string;
   durationWeeks?: number;
-  bookerOrder?: string[];
+  subRoundBookerIds?: string[];
 }
 
 export interface ReservationRoundsConfig {

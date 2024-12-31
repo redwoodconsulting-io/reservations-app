@@ -33,16 +33,15 @@ export class ReservationRoundsService {
   }
 
   definitionsToRounds(roundsConfig: ReservationRoundsConfig): ReservationRound[] {
-    const firstStartDate = DateTime.fromISO(roundsConfig.startDate);
-    let previousEndDate = firstStartDate;
+    let previousEndDate = DateTime.fromISO(roundsConfig.startDate);
 
     return roundsConfig.rounds.map(round => {
       const roundStart = previousEndDate;
-      if (round.durationWeeks && round.bookerOrder?.length) {
+      if (round.durationWeeks && round.subRoundBookerIds?.length) {
         throw new Error(`Round #${round.position} "${round.name}" cannot have both durationWeeks and bookerOrder`);
       }
 
-      const durationWeeks = round.durationWeeks || round.bookerOrder?.length;
+      const durationWeeks = round.durationWeeks || round.subRoundBookerIds?.length;
       if (!durationWeeks || durationWeeks < 1) {
         throw new Error(`Round #${round.position} "${round.name}" must have durationWeeks or bookerOrder`);
       }
@@ -54,7 +53,7 @@ export class ReservationRoundsService {
         position: round.position,
         startDate: roundStart,
         endDate: roundEnd,
-        bookerOrder: round.bookerOrder || [],
+        subRoundBookerIds: round.subRoundBookerIds || [],
       };
     });
   }
