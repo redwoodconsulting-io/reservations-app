@@ -1,4 +1,4 @@
-import {Component, inject, OnDestroy, signal, Signal} from '@angular/core';
+import {Component, inject, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {Firestore} from '@angular/fire/firestore';
 import {AsyncPipe} from '@angular/common';
@@ -22,6 +22,8 @@ import {TodayService} from './utility/today-service';
 import {TodayPicker} from './utility/today-picker.component';
 import {ReservationRoundsService} from './reservations/reservation-rounds-service';
 import {RoundConfigComponent} from './reservations/round-config.component';
+import {BookerPickerComponent} from './utility/booker-picker.component';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 
 @Component({
@@ -34,6 +36,7 @@ import {RoundConfigComponent} from './reservations/round-config.component';
     WeekTableComponent,
     TodayPicker,
     RoundConfigComponent,
+    BookerPickerComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -48,6 +51,7 @@ export class AppComponent implements OnDestroy {
   private readonly firestore = inject(Firestore);
 
   today: Signal<DateTime>;
+  bookerIdOverride: WritableSignal<string> = signal('');
 
   title = 'Reservations-App';
 
@@ -76,8 +80,12 @@ export class AppComponent implements OnDestroy {
     this.units$ = dataService.units$;
     this.weeks$ = dataService.weeks$;
 
-    this.currentBooker$ = combineLatest([dataService.bookers$, this.user$]).pipe(
-      map(([bookers, user]) => bookers.find(booker => booker.userId === user?.uid))
+    this.currentBooker$ = combineLatest([dataService.bookers$, this.user$, toObservable(this.bookerIdOverride)]).pipe(
+      map(([bookers, user, bookerIdOverride]) => {
+        return bookerIdOverride?.length ?
+          bookers.find(booker => booker.id === bookerIdOverride) :
+          bookers.find(booker => booker.userId === user?.uid);
+      })
     )
 
     this.today = this.todayService.today;

@@ -3,6 +3,7 @@
   <p>Today is: {{ today().toISODate() }}</p>
   @if (isAdmin()) {
     <today-picker [today]="today()"></today-picker>
+    <booker-picker (bookerId)="bookerIdOverride.set($event)" [bookers$]="bookers$"></booker-picker>
   }
   <app-auth/>
   @if (user$ | async) {

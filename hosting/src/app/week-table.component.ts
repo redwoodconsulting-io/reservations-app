@@ -242,6 +242,11 @@ export class WeekTableComponent {
 
   isAdmin(): boolean {
     const currentUser = this.auth.currentUser?.uid || '<nobody>';
+    // There is no admin booker. If one is set (whether as an override, or
+    // otherwise) don't set the admin status.
+    if (this._currentBooker?.id) {
+      return false;
+    }
     return this._permissions.adminUserIds.includes(currentUser);
   }
 
