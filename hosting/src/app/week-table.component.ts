@@ -265,7 +265,7 @@ export class WeekTableComponent {
 
     const applicableBookingLimit = currentRound?.bookedWeeksLimit || 0;
     const bookedWeeks = this._reservations.filter(reservation => reservation.bookerId === currentBooker?.id).length;
-    const underBookingLimit = bookedWeeks < applicableBookingLimit;
+    const underBookingLimit = applicableBookingLimit === 0 || bookedWeeks < applicableBookingLimit;
 
     return bookableRound && underBookingLimit;
   }
