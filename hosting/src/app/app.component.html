@@ -25,7 +25,7 @@
     </mat-chip-set>
     <week-table
       [bookers]="bookers()"
-      [currentBooker]="(currentBooker$ | async) || undefined"
+      [currentBooker]="currentBooker()"
       [weeks]="(weeks$ | async) || []"
       [units]="(units$ | async) || []"
       [permissions]="(permissions$ | async) || {adminUserIds: []}"

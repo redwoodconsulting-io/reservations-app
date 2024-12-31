@@ -1,5 +1,5 @@
 import {inject, Injectable, Signal} from '@angular/core';
-import {filter, map, Observable} from 'rxjs';
+import {catchError, filter, map, Observable} from 'rxjs';
 import {
   BookableUnit,
   Booker,
@@ -26,7 +26,6 @@ import {
   where
 } from '@angular/fire/firestore';
 import {Auth} from '@angular/fire/auth';
-import {combineLatest} from 'rxjs/internal/operators/combineLatest';
 import {toSignal} from '@angular/core/rxjs-interop';
 
 @Injectable({
@@ -58,7 +57,8 @@ export class DataService {
       collection(firestore, 'permissions')
     ).pipe(
       filter(it => !!it),
-      map(it => it[0]),
+      map(it => it[0] as Permissions),
+      catchError((_error, caught) => caught),
     ) as Observable<Permissions>;
 
     // Get the pricing tier documents … with the ID field.
@@ -108,6 +108,7 @@ export class DataService {
       toFirestore: (it: any) => it,
     });
     this.bookers = toSignal(collectionData(bookersCollection).pipe(
+      catchError((_error, caught) => caught)
     ), {initialValue: []});
 
     // Get the bookable unit documents … with the ID field.
@@ -122,7 +123,7 @@ export class DataService {
     this.units$ = collectionData(bookableUnitsCollection).pipe();
 
     this.reservationWeekCounts$ = this.reservations$.pipe(
-      map( reservations => {
+      map(reservations => {
         return reservations.reduce((acc, reservation) => {
           const key = reservation.bookerId;
           if (!acc[key]) {

@@ -1,4 +1,4 @@
-import {Component, inject, Input} from '@angular/core';
+import {Component, inject, Input, signal, WritableSignal} from '@angular/core';
 import {KeyValuePipe, NgForOf} from '@angular/common';
 import {
   MatCell,
@@ -26,7 +26,6 @@ import {
   PricingTierMap,
   ReservableWeek,
   Reservation,
-  ReservationRound,
   UnitPricing,
   UnitPricingMap
 } from './types';
@@ -93,8 +92,8 @@ export class WeekTableComponent {
   private readonly reservationsRoundsService = inject(ReservationRoundsService);
 
   // Input fields
-  private _bookers: Booker[] = [];
-  private _currentBooker: Booker | undefined;
+  private _bookers: WritableSignal<Booker[]> = signal([]);
+  private _currentBooker: WritableSignal<Booker | undefined> = signal(undefined);
   private _reservations: Reservation[] = [];
   private _permissions: Permissions = {adminUserIds: []};
   private _pricingTiers: PricingTierMap = {};
@@ -107,13 +106,13 @@ export class WeekTableComponent {
   displayedColumns: string[] = [];
 
   buildTableRows() {
-    const currentBooker = this._currentBooker;
+    const currentBooker = this._currentBooker();
     const weeks = this._weeks;
     const units = this._units;
     const permissions = this._permissions;
     const pricingTiers = this._pricingTiers;
     const reservations = this._reservations;
-    const bookers = this._bookers;
+    const bookers = this._bookers();
     const unitPricing = this._unitPricing;
 
     // Don't render table rows until all data is available.
@@ -164,12 +163,12 @@ export class WeekTableComponent {
 
   @Input()
   set bookers(value: Booker[]) {
-    this._bookers = value;
+    this._bookers.set(value);
     this.buildTableRows();
   }
 
   @Input() set currentBooker(value: Booker | undefined) {
-    this._currentBooker = value;
+    this._currentBooker.set(value);
     this.buildTableRows()
   }
 
@@ -223,8 +222,8 @@ export class WeekTableComponent {
     const currentBooker = this._currentBooker;
     const bookers = this._bookers;
 
-    return bookers.filter(booker => {
-      return this.isAdmin() || booker.userId === currentBooker?.userId;
+    return bookers().filter(booker => {
+      return this.isAdmin() || booker.userId === currentBooker()?.userId;
     });
   }
 
@@ -247,7 +246,7 @@ export class WeekTableComponent {
     const currentUser = this.auth.currentUser?.uid || '<nobody>';
     // There is no admin booker. If one is set (whether as an override, or
     // otherwise) don't set the admin status.
-    if (this._currentBooker?.id) {
+    if (this._currentBooker()?.id) {
       return false;
     }
     return this._permissions.adminUserIds.includes(currentUser);
@@ -257,7 +256,7 @@ export class WeekTableComponent {
     if (this.isAdmin()) {
       return true;
     }
-    const currentBooker = this._currentBooker;
+    const currentBooker = this._currentBooker();
     const currentRound = this.reservationsRoundsService.currentRound();
     const currentSubRoundBooker = this.reservationsRoundsService.currentSubRoundBooker();
 
@@ -274,7 +273,7 @@ export class WeekTableComponent {
     if (this.isAdmin()) {
       return true;
     }
-    return reservation.bookerId === this._currentBooker?.id;
+    return reservation.bookerId === this._currentBooker()?.id;
   }
 
   editReservation(reservation: WeekReservation, week: WeekRow) {
@@ -359,7 +358,7 @@ export class WeekTableComponent {
   }
 
   bookerName(bookerId: string): string | undefined {
-    const booker = this._bookers.find(it => it.id === bookerId);
+    const booker = this._bookers().find(it => it.id === bookerId);
     return booker?.name;
   }
 
