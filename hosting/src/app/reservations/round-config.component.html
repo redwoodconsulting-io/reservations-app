@@ -1,20 +1,21 @@
 <div class="round-config">
   <ul>
     <li *ngFor="let round of rounds()">
-      @if (round.subRoundBookerIds.length > 0) {
-        Round {{ round.name }}
-        <ul>
-          @for (bookerId of round.subRoundBookerIds; track bookerId; let i = $index) {
-            <li>
-              {{ offsetDate(round.startDate, i) | shortDate }}
-              – {{ offsetDate(round.startDate, i + 1).plus({days: -1}) | shortDate }}:
-              {{ bookerFor(bookerId)?.name || 'unknown' }}
-            </li>
-          }
-        </ul>
-      } @else {
-        Round {{ round.name }}: {{ round.startDate | shortDate }} – {{ round.endDate | shortDate }}
-      }
+      Round {{ round.name }}: {{ round.startDate | shortDate }} – {{ round.endDate | shortDate }}
+      <ul>
+        @for (bookerId of round.subRoundBookerIds; track bookerId; let i = $index) {
+          <li>
+            {{ offsetDate(round.startDate, i) | shortDate }}
+            – {{ offsetDate(round.startDate, i + 1).plus({days: -1}) | shortDate }}:
+            {{ bookerFor(bookerId)?.name || 'unknown' }}
+          </li>
+        }
+        @if (round.bookedWeeksLimit > 0 ) {
+          <li>
+            Booking limit: {{ round.bookedWeeksLimit }} weeks
+          </li>
+        }
+      </ul>
     </li>
   </ul>
 </div>
