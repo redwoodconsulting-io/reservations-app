@@ -3,4 +3,6 @@ main {
   align-items: center;
   margin-left: 10%;
   margin-right: 10%;
+
+  padding-bottom: 48px;
 }

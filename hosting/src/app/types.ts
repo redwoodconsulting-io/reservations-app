@@ -1,3 +1,5 @@
+import {DateTime} from 'luxon';
+
 export interface BookableUnit {
   id: string;
   name: string;
@@ -23,6 +25,7 @@ export interface PricingTier {
   name: string;
   color: number[];
 }
+
 export type PricingTierMap = { [key: string]: PricingTier };
 
 export interface ReservableWeek {
@@ -39,6 +42,27 @@ export interface Reservation {
   bookerId: string;
 }
 
+export interface ReservationRound {
+  position: number;
+  name: string;
+  startDate: DateTime;
+  endDate: DateTime;
+  subRoundBookerIds: string[];
+}
+
+export interface ReservationRoundDefinition {
+  position: number;
+  name: string;
+  durationWeeks?: number;
+  subRoundBookerIds?: string[];
+}
+
+export interface ReservationRoundsConfig {
+  year: number;
+  startDate: string;
+  rounds: ReservationRoundDefinition[];
+}
+
 export interface UnitPricing {
   year: number;
   tierId: string;
@@ -46,5 +70,6 @@ export interface UnitPricing {
   weeklyPrice: number;
   dailyPrice: number;
 }
+
 // Map from unit ID to array of unit pricings (identified by tiers).
 export type UnitPricingMap = { [key: string]: UnitPricing[] };

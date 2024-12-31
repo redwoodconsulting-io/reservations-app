@@ -26,6 +26,7 @@ import {
   PricingTierMap,
   ReservableWeek,
   Reservation,
+  ReservationRound,
   UnitPricing,
   UnitPricingMap
 } from './types';
@@ -39,6 +40,7 @@ import {ANIMATION_SETTINGS} from './app.config';
 import {ErrorDialog} from './utility/error-dialog.component';
 import {CurrencyPipe} from './utility/currency-pipe';
 import {Auth} from '@angular/fire/auth';
+import {ReservationRoundsService} from './reservations/reservation-rounds-service';
 
 interface WeekRow {
   startDate: DateTime;
@@ -88,6 +90,7 @@ export class WeekTableComponent {
   private readonly auth = inject(Auth);
   private readonly dataService = inject(DataService);
   private readonly dialog = inject(MatDialog);
+  private readonly reservationsRoundsService = inject(ReservationRoundsService);
 
   // Input fields
   private _bookers: Booker[] = [];
@@ -103,7 +106,7 @@ export class WeekTableComponent {
   tableRows$: Observable<WeekRow[]> = of([])
   displayedColumns: string[] = [];
 
-  buildTableRows(): Observable<WeekRow[]> {
+  buildTableRows() {
     const currentBooker = this._currentBooker;
     const weeks = this._weeks;
     const units = this._units;
@@ -116,11 +119,12 @@ export class WeekTableComponent {
     // Don't render table rows until all data is available.
     // Exception: allow no current booker if admin.
     if (!weeks.length || !(currentBooker || this.isAdmin()) || !units.length || !permissions || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
-      return of([]);
+      this.tableRows$ = of([]);
+      return;
     }
 
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
-    return of(
+    this.tableRows$ = of(
       weeks.map(week => {
         const startDate = DateTime.fromISO(week.startDate);
         const endDate = startDate.plus({days: 7});
@@ -161,7 +165,7 @@ export class WeekTableComponent {
   @Input()
   set bookers(value: Booker[]) {
     this._bookers = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input() set currentBooker(value: Booker | undefined) {
@@ -172,7 +176,7 @@ export class WeekTableComponent {
   @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   get units() {
@@ -182,7 +186,7 @@ export class WeekTableComponent {
   @Input()
   set weeks(value: ReservableWeek[]) {
     this._weeks = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input()
@@ -194,7 +198,7 @@ export class WeekTableComponent {
   @Input()
   set pricingTiers(value: PricingTierMap) {
     this._pricingTiers = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   get pricingTiers() {
@@ -204,13 +208,13 @@ export class WeekTableComponent {
   @Input()
   set reservations(value: Reservation[]) {
     this._reservations = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input()
   set unitPricing(value: UnitPricingMap) {
     this._unitPricing = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   // Helper functions
@@ -241,7 +245,23 @@ export class WeekTableComponent {
 
   isAdmin(): boolean {
     const currentUser = this.auth.currentUser?.uid || '<nobody>';
+    // There is no admin booker. If one is set (whether as an override, or
+    // otherwise) don't set the admin status.
+    if (this._currentBooker?.id) {
+      return false;
+    }
     return this._permissions.adminUserIds.includes(currentUser);
+  }
+
+  canAddReservation(): boolean {
+    if (this.isAdmin()) {
+      return true;
+    }
+    const currentBooker = this._currentBooker;
+    const currentRound = this.reservationsRoundsService.currentRound();
+    const currentSubRoundBooker = this.reservationsRoundsService.currentSubRoundBooker();
+
+    return !!currentRound && (!currentSubRoundBooker || currentSubRoundBooker.id === currentBooker?.id);
   }
 
   canEditReservation(reservation: WeekReservation): boolean {

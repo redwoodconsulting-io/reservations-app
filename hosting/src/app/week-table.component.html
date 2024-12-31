@@ -33,12 +33,14 @@
           }
         </div>
       } @else {
-        <div class="add-button">
-          <button mat-icon-button aria-label="Add reservation"
-                  (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
-            <mat-icon class="material-icons-outlined">add_box</mat-icon>
-          </button>
-        </div>
+        @if (canAddReservation()) {
+          <div class="add-button">
+            <button mat-icon-button aria-label="Add reservation"
+                    (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
+              <mat-icon class="material-icons-outlined">add_box</mat-icon>
+            </button>
+          </div>
+        }
       }
     </td>
     <td mat-footer-cell *matFooterCellDef>
