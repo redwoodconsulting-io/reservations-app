@@ -7,20 +7,22 @@
   }
   <app-auth/>
   @if (user$ | async) {
-    <mat-chip>
-      Year: {{ dataService.configYear }}
-    </mat-chip>
-    <mat-chip>
-      Current round: {{ reservationRoundsService.currentRound()?.name || 'none' }}
-      @if (reservationRoundsService.currentSubRoundBooker()) {
-        ({{ reservationRoundsService.currentSubRoundBooker()?.name }})
-      }
-    </mat-chip>
-    @for (item of (dataService.reservationWeekCounts$ | async) || {} | keyvalue; track [item.key, item.value]) {
+    <mat-chip-set>
       <mat-chip>
-        {{ bookerName(item.key) }}: {{ item.value }} weeks booked
+        Year: {{ dataService.configYear }}
       </mat-chip>
-    }
+      <mat-chip>
+        Current round: {{ reservationRoundsService.currentRound()?.name || 'none' }}
+        @if (reservationRoundsService.currentSubRoundBooker()) {
+          ({{ reservationRoundsService.currentSubRoundBooker()?.name }})
+        }
+      </mat-chip>
+      @for (item of (dataService.reservationWeekCounts$ | async) || {} | keyvalue; track [item.key, item.value]) {
+        <mat-chip>
+          {{ bookerName(item.key) }}: {{ item.value }} weeks booked
+        </mat-chip>
+      }
+    </mat-chip-set>
     <week-table
       [bookers]="bookers()"
       [currentBooker]="(currentBooker$ | async) || undefined"

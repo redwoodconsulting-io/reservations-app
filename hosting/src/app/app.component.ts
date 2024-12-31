@@ -24,7 +24,7 @@ import {ReservationRoundsService} from './reservations/reservation-rounds-servic
 import {RoundConfigComponent} from './reservations/round-config.component';
 import {BookerPickerComponent} from './utility/booker-picker.component';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {MatChip} from '@angular/material/chips';
+import {MatChip, MatChipSet} from '@angular/material/chips';
 
 
 @Component({
@@ -40,6 +40,7 @@ import {MatChip} from '@angular/material/chips';
     BookerPickerComponent,
     MatChip,
     KeyValuePipe,
+    MatChipSet,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
