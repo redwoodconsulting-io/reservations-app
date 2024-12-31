@@ -12,6 +12,9 @@
     </mat-chip>
     <mat-chip>
       Current round: {{ reservationRoundsService.currentRound()?.name || 'none' }}
+      @if (reservationRoundsService.currentSubRoundBooker()) {
+        ({{ reservationRoundsService.currentSubRoundBooker()?.name }})
+      }
     </mat-chip>
     <week-table
       [bookers]="(bookers$ | async) || []"
