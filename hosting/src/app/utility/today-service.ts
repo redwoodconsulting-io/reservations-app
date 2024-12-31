@@ -1,7 +1,6 @@
 import {Injectable, signal, Signal, WritableSignal} from '@angular/core';
 import {DateTime} from 'luxon';
 
-// Adapted from Abhinav Kumar: https://stackoverflow.com/a/79210442/211771
 @Injectable({
   providedIn: 'root',
 })
