@@ -49,6 +49,7 @@ export interface ReservationRound {
   endDate: DateTime;
   subRoundBookerIds: string[];
   bookedWeeksLimit: number;
+  allowDailyReservations: boolean;
 }
 
 export interface ReservationRoundDefinition {
@@ -57,6 +58,7 @@ export interface ReservationRoundDefinition {
   durationWeeks?: number;
   subRoundBookerIds?: string[];
   bookedWeeksLimit?: number;
+  allowDailyReservations?: boolean;
 }
 
 export interface ReservationRoundsConfig {

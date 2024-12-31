@@ -229,10 +229,10 @@ export class WeekTableComponent {
 
   addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
     const unitPricing = this._unitPricing[unit.id] || [];
-    const bookers = this._bookers;
+    const allowDailyReservations = this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
 
     const dialogRef = this.dialog.open(ReserveDialog, {
-      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers: this.availableBookers()},
+      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers: this.availableBookers(), allowDailyReservations},
       ...ANIMATION_SETTINGS,
     });
 
@@ -283,6 +283,7 @@ export class WeekTableComponent {
     const weekEndDate = week.endDate;
     const unitPricing = this._unitPricing[unit.id] || [];
     const bookers = this.availableBookers();
+    const allowDailyReservations = this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
 
     const dialogRef = this.dialog.open(ReserveDialog, {
       data: {
@@ -295,6 +296,7 @@ export class WeekTableComponent {
         initialGuestName: reservation.guestName,
         initialBookerId: reservation.bookerId,
         existingReservationId: reservation.id,
+        allowDailyReservations,
       },
       ...ANIMATION_SETTINGS,
     });

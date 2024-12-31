@@ -35,6 +35,7 @@ interface ReserveDialogData {
   initialGuestName?: string;
   initialBookerId?: string;
   existingReservationId?: string;
+  allowDailyReservations: boolean;
 }
 
 @Component({
@@ -101,7 +102,13 @@ export class ReserveDialog {
 
   reservationCost(): number | undefined {
     const applicablePricing = this.unitPricing.find(it => it.tierId === this.tier?.id);
-    return applicablePricing?.weeklyPrice;
+    const days = this.reservationEndDate().diff(this.reservationStartDate(), 'days').days;
+
+    if (days === 7 || applicablePricing?.dailyPrice === undefined) {
+      return applicablePricing?.weeklyPrice;
+    } else {
+      return applicablePricing?.dailyPrice * days;
+    }
   }
 
   @HostListener('window:keyup.Enter', ['$event'])
@@ -113,7 +120,9 @@ export class ReserveDialog {
 
   isValid(): boolean {
     return this.guestName().length > 0 &&
-      this.reservationStartDate <= this.reservationEndDate &&
+      this.reservationStartDate() < this.reservationEndDate() &&
+      this.reservationStartDate() >= this.weekStartDate &&
+      this.reservationEndDate() <= this.weekEndDate &&
       !!this.bookerId();
   }
 
@@ -132,5 +141,9 @@ export class ReserveDialog {
     if (confirm("Really delete? This cannot be undone")) {
       this.deleteReservation.emit();
     }
+  }
+
+  canEditDates(): boolean {
+    return this.data.allowDailyReservations;
   }
 }

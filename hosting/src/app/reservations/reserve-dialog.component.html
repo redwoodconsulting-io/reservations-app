@@ -15,9 +15,9 @@
   <div>
     <mat-form-field>
       <mat-label>Start date</mat-label>
-      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="startPicker"
-             [(ngModel)]="reservationStartDate" readonly/>
-      <mat-datepicker-toggle matIconSuffix [for]="startPicker" disabled></mat-datepicker-toggle>
+      <input matInput [min]="weekStartDate" [max]="reservationEndDate()" [matDatepicker]="startPicker"
+             [(ngModel)]="reservationStartDate" [readonly]="!canEditDates()"/>
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker" [disabled]="!canEditDates()"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
       <mat-error>Invalid date</mat-error>
     </mat-form-field>
@@ -25,9 +25,9 @@
   <div>
     <mat-form-field>
       <mat-label>End date</mat-label>
-      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="endPicker"
-             [(ngModel)]="reservationEndDate" readonly/>
-      <mat-datepicker-toggle matIconSuffix [for]="endPicker" disabled></mat-datepicker-toggle>
+      <input matInput [min]="reservationStartDate().plus({days: 1})" [max]="weekEndDate" [matDatepicker]="endPicker"
+             [(ngModel)]="reservationEndDate" [readonly]="!canEditDates()"/>
+      <mat-datepicker-toggle matIconSuffix [for]="endPicker" [disabled]="!canEditDates()"></mat-datepicker-toggle>
       <mat-datepicker #endPicker></mat-datepicker>
       <mat-error>Invalid date</mat-error>
     </mat-form-field>

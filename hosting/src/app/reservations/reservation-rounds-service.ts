@@ -84,6 +84,7 @@ export class ReservationRoundsService implements OnDestroy {
         endDate: roundEnd,
         subRoundBookerIds: round.subRoundBookerIds || [],
         bookedWeeksLimit: round.bookedWeeksLimit || 0,
+        allowDailyReservations: !!round.allowDailyReservations,
       };
     });
   }
