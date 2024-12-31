@@ -1,6 +1,6 @@
 import {inject, Injectable, OnDestroy, signal, WritableSignal} from '@angular/core';
 import {Booker, ReservationRound, ReservationRoundsConfig} from '../types';
-import {combineLatest, map, Observable} from 'rxjs';
+import {catchError, combineLatest, map, Observable} from 'rxjs';
 import {DataService} from '../data-service';
 import {DateTime} from 'luxon';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -25,30 +25,35 @@ export class ReservationRoundsService implements OnDestroy {
   constructor(private readonly dataService: DataService) {
     this.reservationRoundsConfig$ = this.dataService.reservationRoundsConfig$;
     this.reservationRounds$ = this.reservationRoundsConfig$.pipe(
-      map(config => this.definitionsToRounds(config))
+      map(config => this.definitionsToRounds(config)),
+      catchError((_error, caught) => caught)
     );
 
-    this.currentRoundSubscription = combineLatest([this.reservationRounds$, toObservable(this.today)]).subscribe(
-      ([rounds, today]) => {
+    this.currentRoundSubscription = combineLatest([this.reservationRounds$, toObservable(this.today)]).subscribe({
+      next: ([rounds, today]) => {
         const round = rounds.find(round => round.startDate <= today && round.endDate >= today);
         this.currentRound.set(round);
+      },
+      error: _error => {
+        this.currentRound.set(undefined);
       }
-    );
+    });
 
-    this.currentSubRoundBookerSubscription = combineLatest([toObservable(this.today), toObservable(this.currentRound), toObservable(this.dataService.bookers)]).subscribe(
-      ([today, round, bookers]) => {
+    this.currentSubRoundBookerSubscription = combineLatest([toObservable(this.today), toObservable(this.currentRound), toObservable(this.dataService.bookers)]).subscribe({
+      next: ([today, round, bookers]) => {
         if (!round || !round.subRoundBookerIds.length) {
           this.currentSubRoundBooker.set(undefined);
           return;
         }
 
         const weekOffset = Math.floor(today.diff(round.startDate).as('days') / 7);
-        console.log(`today: ${today}, weekOffset: ${weekOffset}, round: ${round.name}, start: ${round.startDate}, end: ${round.endDate}`);
         const bookerId = round.subRoundBookerIds[weekOffset];
         const booker = bookers.find(booker => booker.id === bookerId);
         this.currentSubRoundBooker.set(booker);
+      }, error: _error => {
+        this.currentSubRoundBooker.set(undefined);
       }
-    );
+    });
   }
 
   ngOnDestroy() {

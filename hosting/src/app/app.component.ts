@@ -1,10 +1,9 @@
 import {Component, inject, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {Firestore} from '@angular/fire/firestore';
 import {AsyncPipe, KeyValuePipe} from '@angular/common';
-import {AuthComponent} from './auth/auth.component';
-import {Auth, User, user} from '@angular/fire/auth';
-import {combineLatest, map, Observable} from 'rxjs';
+import {AuthComponent, authState} from './auth/auth.component';
+import {Auth, User} from '@angular/fire/auth';
+import {catchError, combineLatest, map, Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
 import {
   BookableUnit,
@@ -50,10 +49,9 @@ export class AppComponent implements OnDestroy {
   protected readonly dataService;
   protected readonly reservationRoundsService = inject(ReservationRoundsService);
   private readonly todayService = inject(TodayService);
-  user$ = user(this.auth);
+  user$ = authState(this.auth);
   private currentUser?: User;
   private currentPermissions?: Permissions;
-  private readonly firestore = inject(Firestore);
 
   today: Signal<DateTime>;
   bookerIdOverride: WritableSignal<string> = signal('');
@@ -61,7 +59,7 @@ export class AppComponent implements OnDestroy {
   title = 'Reservations-App';
 
   bookers: Signal<Booker[]>;
-  currentBooker$: Observable<Booker | undefined>;
+  currentBooker: WritableSignal<Booker | undefined> = signal(undefined);
   weeks$: Observable<ReservableWeek[]>;
   reservationRounds$: Observable<ReservationRound[]>;
   reservations$: Observable<Reservation[]>;
@@ -72,7 +70,7 @@ export class AppComponent implements OnDestroy {
 
   isAdmin = signal(false);
   currentUserSubscription;
-  permissionsSubscription;
+  bookersSubscription;
 
   constructor(dataService: DataService, reservationRoundsService: ReservationRoundsService) {
     this.dataService = dataService;
@@ -85,30 +83,38 @@ export class AppComponent implements OnDestroy {
     this.units$ = dataService.units$;
     this.weeks$ = dataService.weeks$;
 
-    this.currentBooker$ = combineLatest([toObservable(dataService.bookers), this.user$, toObservable(this.bookerIdOverride)]).pipe(
-      map(([bookers, user, bookerIdOverride]) => {
-        return bookerIdOverride?.length ?
+    this.bookersSubscription = combineLatest([toObservable(dataService.bookers), this.user$, toObservable(this.bookerIdOverride)]).subscribe(
+      ([bookers, user, bookerIdOverride]) => {
+        this.currentBooker.set(!!bookerIdOverride ?
           bookers.find(booker => booker.id === bookerIdOverride) :
-          bookers.find(booker => booker.userId === user?.uid);
-      })
+          bookers.find(booker => booker.userId === user?.uid)
+        )
+      }
     )
 
     this.today = this.todayService.today;
 
-    this.currentUserSubscription = this.user$.subscribe(user => {
-      this.currentUser = user || undefined
-      this.isAdmin.set(!!this.currentUser && !!this.currentPermissions && this.currentPermissions?.adminUserIds.includes(this.currentUser.uid));
-    });
-
-    this.permissionsSubscription = this.permissions$.subscribe(permissions => {
-      this.currentPermissions = permissions || undefined;
-      this.isAdmin.set(!!this.currentUser && this.currentPermissions?.adminUserIds.includes(this.currentUser.uid));
-    })
+    this.currentUserSubscription = combineLatest([this.user$, this.permissions$]).pipe(
+      map(([user, permissions]) => {
+        return [user, permissions];
+      }),
+      catchError((_error, caught) => {
+        this.currentUser = undefined;
+        this.isAdmin.set(false);
+        return caught;
+      }),
+    ).subscribe(
+      ([user, permissions]) => {
+        this.currentUser = (user as User) || undefined;
+        this.currentPermissions = (permissions as Permissions) || undefined;
+        this.isAdmin.set(!!this.currentUser && !!this.currentPermissions && this.currentPermissions.adminUserIds.includes(this.currentUser.uid));
+      }
+    )
   }
 
   ngOnDestroy() {
-    this.permissionsSubscription.unsubscribe();
-    this.currentUserSubscription.unsubscribe();
+    this.currentUserSubscription?.unsubscribe();
+    this.bookersSubscription?.unsubscribe();
   }
 
   bookerName(bookerId: string): string {
