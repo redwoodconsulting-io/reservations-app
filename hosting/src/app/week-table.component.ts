@@ -103,7 +103,7 @@ export class WeekTableComponent {
   tableRows$: Observable<WeekRow[]> = of([])
   displayedColumns: string[] = [];
 
-  buildTableRows(): Observable<WeekRow[]> {
+  buildTableRows() {
     const currentBooker = this._currentBooker;
     const weeks = this._weeks;
     const units = this._units;
@@ -116,11 +116,12 @@ export class WeekTableComponent {
     // Don't render table rows until all data is available.
     // Exception: allow no current booker if admin.
     if (!weeks.length || !(currentBooker || this.isAdmin()) || !units.length || !permissions || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
-      return of([]);
+      this.tableRows$ = of([]);
+      return;
     }
 
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
-    return of(
+    this.tableRows$ = of(
       weeks.map(week => {
         const startDate = DateTime.fromISO(week.startDate);
         const endDate = startDate.plus({days: 7});
@@ -161,7 +162,7 @@ export class WeekTableComponent {
   @Input()
   set bookers(value: Booker[]) {
     this._bookers = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input() set currentBooker(value: Booker | undefined) {
@@ -172,7 +173,7 @@ export class WeekTableComponent {
   @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   get units() {
@@ -182,7 +183,7 @@ export class WeekTableComponent {
   @Input()
   set weeks(value: ReservableWeek[]) {
     this._weeks = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input()
@@ -194,7 +195,7 @@ export class WeekTableComponent {
   @Input()
   set pricingTiers(value: PricingTierMap) {
     this._pricingTiers = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   get pricingTiers() {
@@ -204,13 +205,13 @@ export class WeekTableComponent {
   @Input()
   set reservations(value: Reservation[]) {
     this._reservations = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   @Input()
   set unitPricing(value: UnitPricingMap) {
     this._unitPricing = value;
-    this.tableRows$ = this.buildTableRows();
+    this.buildTableRows();
   }
 
   // Helper functions
