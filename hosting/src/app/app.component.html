@@ -3,7 +3,7 @@
   <p>Today is: {{ today().toISODate() }}</p>
   @if (isAdmin()) {
     <today-picker [today]="today()"></today-picker>
-    <booker-picker (bookerId)="bookerIdOverride.set($event)" [bookers$]="bookers$"></booker-picker>
+    <booker-picker (bookerId)="bookerIdOverride.set($event)" [bookers]="bookers"></booker-picker>
   }
   <app-auth/>
   @if (user$ | async) {
@@ -16,8 +16,13 @@
         ({{ reservationRoundsService.currentSubRoundBooker()?.name }})
       }
     </mat-chip>
+    @for (item of (dataService.reservationWeekCounts$ | async) || {} | keyvalue; track [item.key, item.value]) {
+      <mat-chip>
+        {{ bookerName(item.key) }}: {{ item.value }} weeks booked
+      </mat-chip>
+    }
     <week-table
-      [bookers]="(bookers$ | async) || []"
+      [bookers]="bookers()"
       [currentBooker]="(currentBooker$ | async) || undefined"
       [weeks]="(weeks$ | async) || []"
       [units]="(units$ | async) || []"
@@ -26,7 +31,7 @@
       [reservations]="(reservations$ | async) || []"
       [unitPricing]="(unitPricing$ | async) || {}"
     />
-    <round-config [rounds$]="reservationRounds$" [bookers$]="bookers$"/>
+    <round-config [rounds$]="reservationRounds$" [bookers]="bookers"/>
   } @else {
     <p>
       Please log in
