@@ -24,7 +24,15 @@ export class ReservationRoundsService {
 
     return roundsConfig.rounds.map(round => {
       const roundStart = previousEndDate;
-      const durationWeeks = round.durationWeeks || round.bookerOrder?.length || 0;
+      if (round.durationWeeks && round.bookerOrder?.length) {
+        throw new Error(`Round #${round.position} "${round.name}" cannot have both durationWeeks and bookerOrder`);
+      }
+
+      const durationWeeks = round.durationWeeks || round.bookerOrder?.length;
+      if (!durationWeeks || durationWeeks < 1) {
+        throw new Error(`Round #${round.position} "${round.name}" must have durationWeeks or bookerOrder`);
+      }
+
       const roundEnd = roundStart.plus({days: durationWeeks * 7 - 1});
       previousEndDate = roundEnd.plus({days: 1});
       return {
