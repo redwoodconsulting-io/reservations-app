@@ -6,11 +6,22 @@ import {AuthComponent} from './auth/auth.component';
 import {Auth, User, user} from '@angular/fire/auth';
 import {combineLatest, map, Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
-import {BookableUnit, Booker, Permissions, PricingTier, ReservableWeek, Reservation, UnitPricingMap} from './types';
+import {
+  BookableUnit,
+  Booker,
+  Permissions,
+  PricingTier,
+  ReservableWeek,
+  Reservation,
+  ReservationRound,
+  UnitPricingMap
+} from './types';
 import {DataService} from './data-service';
 import {DateTime} from 'luxon';
 import {TodayService} from './utility/today-service';
 import {TodayPicker} from './utility/today-picker.component';
+import {ReservationRoundsService} from './reservations/reservation-rounds-service';
+import {RoundConfigComponent} from './reservations/round-config.component';
 
 
 @Component({
@@ -22,6 +33,7 @@ import {TodayPicker} from './utility/today-picker.component';
     AuthComponent,
     WeekTableComponent,
     TodayPicker,
+    RoundConfigComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -42,6 +54,7 @@ export class AppComponent implements OnDestroy {
   bookers$: Observable<Booker[]>;
   currentBooker$: Observable<Booker | undefined>;
   weeks$: Observable<ReservableWeek[]>;
+  reservationRounds$: Observable<ReservationRound[]>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
   permissions$: Observable<Permissions>;
@@ -52,11 +65,12 @@ export class AppComponent implements OnDestroy {
   currentUserSubscription;
   permissionsSubscription;
 
-  constructor(dataService: DataService) {
+  constructor(dataService: DataService, reservationRoundsService: ReservationRoundsService) {
     this.dataService = dataService;
     this.bookers$ = dataService.bookers$;
     this.permissions$ = dataService.permissions$;
     this.pricingTiers$ = dataService.pricingTiers$;
+    this.reservationRounds$ = reservationRoundsService.reservationRounds$;
     this.reservations$ = dataService.reservations$;
     this.unitPricing$ = dataService.unitPricing$;
     this.units$ = dataService.units$;

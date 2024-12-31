@@ -9,6 +9,7 @@ import {
   PricingTierMap,
   ReservableWeek,
   Reservation,
+  ReservationRoundsConfig,
   UnitPricing,
   UnitPricingMap
 } from './types';
@@ -24,7 +25,7 @@ import {
   updateDoc,
   where
 } from '@angular/fire/firestore';
-import {Auth, user} from '@angular/fire/auth';
+import {Auth} from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root',
@@ -36,6 +37,7 @@ export class DataService {
   bookers$: Observable<Booker[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<PricingTierMap>;
+  reservationRoundsConfig$: Observable<ReservationRoundsConfig>;
   reservations$: Observable<Reservation[]>;
   units$: Observable<BookableUnit[]>;
   unitPricing$: Observable<UnitPricingMap>;
@@ -75,6 +77,12 @@ export class DataService {
           }, {} as { [key: string]: PricingTier });
         }
       )
+    );
+
+    const reservationRoundsCollection = collection(firestore, 'reservationRounds');
+    const reservationRoundsQuery = query(reservationRoundsCollection, where('year', '==', this.configYear), limit(1));
+    this.reservationRoundsConfig$ = collectionData(reservationRoundsQuery).pipe(
+      map((it) => it[0] as ReservationRoundsConfig),
     );
 
     this.reservationsCollection = collection(firestore, 'reservations').withConverter<Reservation>({

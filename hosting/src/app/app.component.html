@@ -1,6 +1,6 @@
 <main class="main">
   <h1>{{ title }}</h1>
-  <p>Today is: {{today().toISODate()}}</p>
+  <p>Today is: {{ today().toISODate() }}</p>
   @if (isAdmin()) {
     <today-picker [today]="today()"></today-picker>
   }
@@ -17,6 +17,7 @@
       [reservations]="(reservations$ | async) || []"
       [unitPricing]="(unitPricing$ | async) || {}"
     />
+    <round-config [rounds$]="reservationRounds$" [bookers$]="bookers$"/>
   } @else {
     <p>
       Please log in

@@ -13,6 +13,7 @@ import {DialogService} from './utility/dialog-service';
 import {MatDialog} from '@angular/material/dialog';
 import {provideLuxonDateAdapter} from '@angular/material-luxon-adapter';
 import {TodayService} from './utility/today-service';
+import {ReservationRoundsService} from './reservations/reservation-rounds-service';
 
 export const ANIMATION_SETTINGS = {
   enterAnimationDuration: "250ms",
@@ -48,6 +49,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     {provide: MatDialog, useClass: DialogService},
     provideLuxonDateAdapter(),
+    {provide: ReservationRoundsService},
     {provide: TodayService},
   ],
 };
