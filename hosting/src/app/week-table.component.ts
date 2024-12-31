@@ -50,8 +50,8 @@ interface WeekRow {
 
 interface WeekReservation {
   id: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: DateTime;
+  endDate: DateTime;
   unit: BookableUnit;
   guestName: string;
   bookerId: string;
@@ -137,8 +137,8 @@ export class WeekTableComponent {
           const unit = units.find(unit => unit.id === reservation.unitId);
           return {
             id: reservation.id,
-            startDate: new Date(Date.parse(reservation.startDate)),
-            endDate: new Date(Date.parse(reservation.endDate)),
+            startDate: DateTime.fromISO(reservation.startDate),
+            endDate: DateTime.fromISO(reservation.endDate),
             unit,
             guestName: reservation.guestName,
             bookerId: reservation.bookerId,
