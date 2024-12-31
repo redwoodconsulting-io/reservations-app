@@ -5,13 +5,14 @@ import {
   model,
   OnDestroy,
   output,
+  OutputRefSubscription,
+  Signal,
   signal,
   WritableSignal,
 } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatFormField, MatLabel} from '@angular/material/form-field';
 import {Booker} from '../types';
-import {Observable, Subscription} from 'rxjs';
 import {NgForOf} from '@angular/common';
 import {MatOption, MatSelect} from '@angular/material/select';
 
@@ -32,25 +33,18 @@ import {MatOption, MatSelect} from '@angular/material/select';
 export class BookerPickerComponent implements OnDestroy {
   bookerId = output<string>();
   _bookerId = model('');
-  bookers: WritableSignal<Booker[]> = signal([]);
+  @Input()
+  bookers: Signal<Booker[]> = signal([]);
 
-  bookersSubscription?: Subscription = undefined;
+  bookerSubscription?: OutputRefSubscription;
 
   constructor() {
-    this._bookerId.subscribe(id => {
+    this.bookerSubscription = this._bookerId.subscribe(id => {
       this.bookerId.emit(id);
     })
   }
 
   ngOnDestroy() {
-    this.bookersSubscription?.unsubscribe();
-  }
-
-  @Input()
-  set bookers$(value: Observable<Booker[]>) {
-    this.bookersSubscription?.unsubscribe();
-    this.bookersSubscription = value.subscribe(bookers => {
-      this.bookers.set(bookers);
-    });
+    this.bookerSubscription?.unsubscribe();
   }
 }

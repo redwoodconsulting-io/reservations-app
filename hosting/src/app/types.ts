@@ -48,6 +48,7 @@ export interface ReservationRound {
   startDate: DateTime;
   endDate: DateTime;
   subRoundBookerIds: string[];
+  bookedWeeksLimit: number;
 }
 
 export interface ReservationRoundDefinition {
@@ -55,6 +56,7 @@ export interface ReservationRoundDefinition {
   name: string;
   durationWeeks?: number;
   subRoundBookerIds?: string[];
+  bookedWeeksLimit?: number;
 }
 
 export interface ReservationRoundsConfig {

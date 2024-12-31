@@ -35,7 +35,7 @@ export class ReservationRoundsService implements OnDestroy {
       }
     );
 
-    this.currentSubRoundBookerSubscription = combineLatest([toObservable(this.today), toObservable(this.currentRound), this.dataService.bookers$]).subscribe(
+    this.currentSubRoundBookerSubscription = combineLatest([toObservable(this.today), toObservable(this.currentRound), toObservable(this.dataService.bookers)]).subscribe(
       ([today, round, bookers]) => {
         if (!round || !round.subRoundBookerIds.length) {
           this.currentSubRoundBooker.set(undefined);
@@ -78,6 +78,7 @@ export class ReservationRoundsService implements OnDestroy {
         startDate: roundStart,
         endDate: roundEnd,
         subRoundBookerIds: round.subRoundBookerIds || [],
+        bookedWeeksLimit: round.bookedWeeksLimit || 0,
       };
     });
   }

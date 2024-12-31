@@ -261,7 +261,13 @@ export class WeekTableComponent {
     const currentRound = this.reservationsRoundsService.currentRound();
     const currentSubRoundBooker = this.reservationsRoundsService.currentSubRoundBooker();
 
-    return !!currentRound && (!currentSubRoundBooker || currentSubRoundBooker.id === currentBooker?.id);
+    const bookableRound = !!currentRound && (!currentSubRoundBooker || currentSubRoundBooker.id === currentBooker?.id);
+
+    const applicableBookingLimit = currentRound?.bookedWeeksLimit || 0;
+    const bookedWeeks = this._reservations.filter(reservation => reservation.bookerId === currentBooker?.id).length;
+    const underBookingLimit = bookedWeeks < applicableBookingLimit;
+
+    return bookableRound && underBookingLimit;
   }
 
   canEditReservation(reservation: WeekReservation): boolean {

@@ -1,7 +1,7 @@
 import {Component, inject, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {Firestore} from '@angular/fire/firestore';
-import {AsyncPipe} from '@angular/common';
+import {AsyncPipe, KeyValuePipe} from '@angular/common';
 import {AuthComponent} from './auth/auth.component';
 import {Auth, User, user} from '@angular/fire/auth';
 import {combineLatest, map, Observable} from 'rxjs';
@@ -24,7 +24,7 @@ import {ReservationRoundsService} from './reservations/reservation-rounds-servic
 import {RoundConfigComponent} from './reservations/round-config.component';
 import {BookerPickerComponent} from './utility/booker-picker.component';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {MatChip} from '@angular/material/chips';
+import {MatChip, MatChipSet} from '@angular/material/chips';
 
 
 @Component({
@@ -39,6 +39,8 @@ import {MatChip} from '@angular/material/chips';
     RoundConfigComponent,
     BookerPickerComponent,
     MatChip,
+    KeyValuePipe,
+    MatChipSet,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -58,7 +60,7 @@ export class AppComponent implements OnDestroy {
 
   title = 'Reservations-App';
 
-  bookers$: Observable<Booker[]>;
+  bookers: Signal<Booker[]>;
   currentBooker$: Observable<Booker | undefined>;
   weeks$: Observable<ReservableWeek[]>;
   reservationRounds$: Observable<ReservationRound[]>;
@@ -74,7 +76,7 @@ export class AppComponent implements OnDestroy {
 
   constructor(dataService: DataService, reservationRoundsService: ReservationRoundsService) {
     this.dataService = dataService;
-    this.bookers$ = dataService.bookers$;
+    this.bookers = dataService.bookers;
     this.permissions$ = dataService.permissions$;
     this.pricingTiers$ = dataService.pricingTiers$;
     this.reservationRounds$ = reservationRoundsService.reservationRounds$;
@@ -83,7 +85,7 @@ export class AppComponent implements OnDestroy {
     this.units$ = dataService.units$;
     this.weeks$ = dataService.weeks$;
 
-    this.currentBooker$ = combineLatest([dataService.bookers$, this.user$, toObservable(this.bookerIdOverride)]).pipe(
+    this.currentBooker$ = combineLatest([toObservable(dataService.bookers), this.user$, toObservable(this.bookerIdOverride)]).pipe(
       map(([bookers, user, bookerIdOverride]) => {
         return bookerIdOverride?.length ?
           bookers.find(booker => booker.id === bookerIdOverride) :
@@ -107,5 +109,9 @@ export class AppComponent implements OnDestroy {
   ngOnDestroy() {
     this.permissionsSubscription.unsubscribe();
     this.currentUserSubscription.unsubscribe();
+  }
+
+  bookerName(bookerId: string): string {
+    return this.bookers().find(booker => booker.id === bookerId)?.name || '';
   }
 }

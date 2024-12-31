@@ -1,4 +1,4 @@
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, Signal} from '@angular/core';
 import {filter, map, Observable} from 'rxjs';
 import {
   BookableUnit,
@@ -26,6 +26,8 @@ import {
   where
 } from '@angular/fire/firestore';
 import {Auth} from '@angular/fire/auth';
+import {combineLatest} from 'rxjs/internal/operators/combineLatest';
+import {toSignal} from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -34,11 +36,12 @@ export class DataService {
   private readonly firestore: Firestore;
   private readonly auth = inject(Auth);
 
-  bookers$: Observable<Booker[]>;
+  bookers: Signal<Booker[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<PricingTierMap>;
   reservationRoundsConfig$: Observable<ReservationRoundsConfig>;
   reservations$: Observable<Reservation[]>;
+  reservationWeekCounts$: Observable<{ [key: string]: number }>;
   units$: Observable<BookableUnit[]>;
   unitPricing$: Observable<UnitPricingMap>;
   weeks$: Observable<ReservableWeek[]>;
@@ -104,7 +107,8 @@ export class DataService {
       },
       toFirestore: (it: any) => it,
     });
-    this.bookers$ = collectionData(bookersCollection).pipe();
+    this.bookers = toSignal(collectionData(bookersCollection).pipe(
+    ), {initialValue: []});
 
     // Get the bookable unit documents … with the ID field.
     const bookableUnitsCollection = collection(firestore, 'units').withConverter<BookableUnit>({
@@ -116,6 +120,19 @@ export class DataService {
       toFirestore: (it: any) => it,
     });
     this.units$ = collectionData(bookableUnitsCollection).pipe();
+
+    this.reservationWeekCounts$ = this.reservations$.pipe(
+      map( reservations => {
+        return reservations.reduce((acc, reservation) => {
+          const key = reservation.bookerId;
+          if (!acc[key]) {
+            acc[key] = 0;
+          }
+          acc[key]++;
+          return acc;
+        }, {} as { [key: string]: number });
+      })
+    );
 
     const unitPricingCollection = collection(firestore, 'unitPricing')
     this.unitPricing$ = collectionData(unitPricingCollection).pipe(
@@ -140,13 +157,6 @@ export class DataService {
       map((it) => it[0] as ConfigData),
       map((it) => it?.weeks || []),
     );
-  }
-
-  currentBooker() {
-    const currentUser = this.auth.currentUser
-    return this.bookers$.pipe(
-      map(bookers => bookers.find(booker => booker.userId === currentUser?.uid))
-    )
   }
 
   addReservation(reservation: Reservation) {
