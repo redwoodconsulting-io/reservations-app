@@ -1,20 +1,34 @@
-import {Injectable} from '@angular/core';
+import {inject, Injectable, signal, WritableSignal} from '@angular/core';
 import {ReservationRound, ReservationRoundsConfig} from '../types';
-import {map, Observable} from 'rxjs';
+import {combineLatest, map, Observable} from 'rxjs';
 import {DataService} from '../data-service';
 import {DateTime} from 'luxon';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {TodayService} from '../utility/today-service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReservationRoundsService {
+  private readonly todayService = inject(TodayService);
+  private readonly today = this.todayService.today;
+
   reservationRoundsConfig$: Observable<ReservationRoundsConfig>;
   reservationRounds$: Observable<ReservationRound[]>;
+
+  currentRound: WritableSignal<ReservationRound | undefined> = signal(undefined);
 
   constructor(private readonly dataService: DataService) {
     this.reservationRoundsConfig$ = this.dataService.reservationRoundsConfig$;
     this.reservationRounds$ = this.reservationRoundsConfig$.pipe(
       map(config => this.definitionsToRounds(config))
+    );
+
+    combineLatest([this.reservationRounds$, toObservable(this.today)]).subscribe(
+      ([rounds, today]) => {
+        const round = rounds.find(round => round.startDate <= today && round.endDate >= today);
+        this.currentRound.set(round);
+      }
     );
   }
 

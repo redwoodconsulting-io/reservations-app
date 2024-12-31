@@ -24,6 +24,7 @@ import {ReservationRoundsService} from './reservations/reservation-rounds-servic
 import {RoundConfigComponent} from './reservations/round-config.component';
 import {BookerPickerComponent} from './utility/booker-picker.component';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {MatChip} from '@angular/material/chips';
 
 
 @Component({
@@ -37,6 +38,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
     TodayPicker,
     RoundConfigComponent,
     BookerPickerComponent,
+    MatChip,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -44,6 +46,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
 export class AppComponent implements OnDestroy {
   private readonly auth = inject(Auth);
   protected readonly dataService;
+  protected readonly reservationRoundsService = inject(ReservationRoundsService);
   private readonly todayService = inject(TodayService);
   user$ = user(this.auth);
   private currentUser?: User;

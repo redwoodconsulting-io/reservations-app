@@ -26,6 +26,7 @@ import {
   PricingTierMap,
   ReservableWeek,
   Reservation,
+  ReservationRound,
   UnitPricing,
   UnitPricingMap
 } from './types';
@@ -92,6 +93,7 @@ export class WeekTableComponent {
   // Input fields
   private _bookers: Booker[] = [];
   private _currentBooker: Booker | undefined;
+  private _currentRound: ReservationRound | undefined;
   private _reservations: Reservation[] = [];
   private _permissions: Permissions = {adminUserIds: []};
   private _pricingTiers: PricingTierMap = {};
@@ -167,6 +169,11 @@ export class WeekTableComponent {
 
   @Input() set currentBooker(value: Booker | undefined) {
     this._currentBooker = value;
+    this.buildTableRows()
+  }
+
+  @Input() set currentRound(value: ReservationRound | undefined) {
+    this._currentRound = value;
     this.buildTableRows()
   }
 

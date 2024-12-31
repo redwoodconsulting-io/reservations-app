@@ -7,7 +7,12 @@
   }
   <app-auth/>
   @if (user$ | async) {
-    Year: {{ dataService.configYear }}
+    <mat-chip>
+      Year: {{ dataService.configYear }}
+    </mat-chip>
+    <mat-chip>
+      Current round: {{ reservationRoundsService.currentRound()?.name || 'none' }}
+    </mat-chip>
     <week-table
       [bookers]="(bookers$ | async) || []"
       [currentBooker]="(currentBooker$ | async) || undefined"
