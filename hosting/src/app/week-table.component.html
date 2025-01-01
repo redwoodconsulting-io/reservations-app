@@ -35,6 +35,14 @@
                       </button>
                     </span>
                   }
+                  @if (!reservation && canAddDailyReservation()) {
+                    <div class="add-button" style="float: right">
+                      <button mat-icon-button aria-label="Add reservation"
+                              (click)="addReservation(weekRow, unit, day, day.plus({days: 1}))">
+                        <mat-icon class="material-icons-outlined">add_box</mat-icon>
+                      </button>
+                    </div>
+                  }
                 </span>
                 <span matListItemLine>{{ reservation?.guestName }}</span>
                 <span>{{ bookerName(reservation?.bookerId || "") || '' }}</span>
@@ -60,7 +68,7 @@
         @if (canAddReservation()) {
           <div class="add-button">
             <button mat-icon-button aria-label="Add reservation"
-                    (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
+                    (click)="addReservation(weekRow, unit, weekRow.startDate, weekRow.endDate)">
               <mat-icon class="material-icons-outlined">add_box</mat-icon>
             </button>
           </div>

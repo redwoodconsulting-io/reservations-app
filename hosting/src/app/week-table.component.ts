@@ -32,7 +32,7 @@ import {
 import {DataService} from './data-service';
 import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
-import {ReserveDialog} from './reservations/reserve-dialog.component';
+import {ReserveDialog, ReserveDialogData} from './reservations/reserve-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {DateTime} from 'luxon';
 import {ANIMATION_SETTINGS} from './app.config';
@@ -236,20 +236,24 @@ export class WeekTableComponent {
     });
   }
 
-  addReservation(unit: BookableUnit, tier: PricingTier, weekStartDate: DateTime, weekEndDate: DateTime) {
+  addReservation(weekRow: WeekRow, unit: BookableUnit, startDate: DateTime, endDate: DateTime) {
     const unitPricing = this._unitPricing[unit.id] || [];
     const allowDailyReservations = this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
+    const blockedDates = this.blockedDaysFor(weekRow.reservations[unit.id])
 
     const dialogRef = this.dialog.open(ReserveDialog, {
       data: {
         unit,
-        tier,
-        weekStartDate,
-        weekEndDate,
+        tier: weekRow.pricingTier,
+        weekStartDate: weekRow.startDate,
+        weekEndDate: weekRow.endDate,
+        startDate: startDate,
+        endDate: endDate,
         unitPricing,
         bookers: this.availableBookers(),
-        allowDailyReservations
-      },
+        allowDailyReservations,
+        blockedDates,
+      } as ReserveDialogData,
       ...ANIMATION_SETTINGS,
     });
 
@@ -286,11 +290,25 @@ export class WeekTableComponent {
     return bookableRound && underBookingLimit;
   }
 
+  canAddDailyReservation(): boolean {
+    return this.canAddReservation() && this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
+  }
+
   canEditReservation(reservation: WeekReservation): boolean {
     if (this.isAdmin()) {
       return true;
     }
     return reservation.bookerId === this._currentBooker()?.id;
+  }
+
+  blockedDaysFor(reservations: WeekReservation[], reservation?: WeekReservation) {
+    const otherReservations = reservations?.filter(it => it.id !== reservation?.id) || [];
+
+    return new Set(otherReservations.flatMap(otherReservation => {
+      const days = otherReservation.endDate.diff(otherReservation.startDate, 'days').days;
+      return [...Array(days).keys()].map(offset => otherReservation.startDate.plus({days: offset}).toISO());
+    }));
+
   }
 
   editReservation(reservation: WeekReservation, week: WeekRow) {
@@ -301,6 +319,8 @@ export class WeekTableComponent {
     const unitPricing = this._unitPricing[unit.id] || [];
     const bookers = this.availableBookers();
     const allowDailyReservations = this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
+
+    const blockedDates = this.blockedDaysFor(week.reservations[unit.id], reservation)
 
     const dialogRef = this.dialog.open(ReserveDialog, {
       data: {
@@ -316,6 +336,7 @@ export class WeekTableComponent {
         initialBookerId: reservation.bookerId,
         existingReservationId: reservation.id,
         allowDailyReservations,
+        blockedDates,
       },
       ...ANIMATION_SETTINGS,
     });

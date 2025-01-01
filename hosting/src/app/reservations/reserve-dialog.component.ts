@@ -22,8 +22,10 @@ import {MatLuxonDateModule} from '@angular/material-luxon-adapter';
 import {DateTime} from 'luxon';
 import {CurrencyPipe} from "../utility/currency-pipe";
 import {MatOption, MatSelect} from '@angular/material/select';
+import {MatButtonToggle, MatButtonToggleGroup} from '@angular/material/button-toggle';
+import {ShortDate} from '../utility/short-date.pipe';
 
-interface ReserveDialogData {
+export interface ReserveDialogData {
   bookers: Booker[];
   unit: BookableUnit;
   tier: PricingTier;
@@ -36,6 +38,7 @@ interface ReserveDialogData {
   initialBookerId?: string;
   existingReservationId?: string;
   allowDailyReservations: boolean;
+  blockedDates: Set<string>;
 }
 
 @Component({
@@ -62,6 +65,9 @@ interface ReserveDialogData {
     CurrencyPipe,
     MatSelect,
     MatOption,
+    MatButtonToggleGroup,
+    MatButtonToggle,
+    ShortDate,
   ]
 })
 export class ReserveDialog {
@@ -74,12 +80,15 @@ export class ReserveDialog {
   reservationEndDate = model(DateTime.now());
   guestName = model('');
   bookerId = model('');
+  bookingDaily = model(false);
 
   readonly existingReservationId: string | undefined;
   readonly bookers: Booker[];
   readonly unit: BookableUnit;
   readonly tier: PricingTier;
   readonly unitPricing: UnitPricing[];
+  readonly blockedDates: Set<string> = new Set();
+  readonly isDateAvailable = this.isDateAvailableBuilder();
 
   reservation = output<Reservation>();
   deleteReservation = output<void>();
@@ -89,6 +98,7 @@ export class ReserveDialog {
     this.tier = data.tier;
     this.unitPricing = data.unitPricing;
     this.bookers = data.bookers;
+    this.blockedDates = data.blockedDates || new Set();
 
     this.weekStartDate = data.weekStartDate;
     this.weekEndDate = data.weekEndDate;
@@ -98,6 +108,26 @@ export class ReserveDialog {
     this.guestName.set(data.initialGuestName || '');
     this.bookerId.set(data.initialBookerId || (this.bookers.length == 1 ? this.bookers[0].id : ''));
     this.existingReservationId = data.existingReservationId;
+
+    this.bookingDaily.set(
+      this.reservationEndDate().diff(this.reservationStartDate(), 'days').days === 1
+    );
+
+    this.reservationStartDate.subscribe(date => {
+      if (this.bookingDaily()) {
+        this.reservationEndDate.set(date.plus({days: 1}));
+      } else {
+        this.reservationEndDate.set(date.plus({days: 7}));
+      }
+    });
+    this.bookingDaily.subscribe(daily => {
+      if (daily) {
+        this.reservationEndDate.set(this.reservationStartDate().plus({days: 1}));
+      } else {
+        this.reservationStartDate.set(this.weekStartDate);
+        this.reservationEndDate.set(this.weekEndDate);
+      }
+    });
   }
 
   reservationCost(): number | undefined {
@@ -118,8 +148,23 @@ export class ReserveDialog {
     }
   }
 
+  isDateAvailableBuilder() {
+    const _this = this;
+
+    return (date: DateTime | null) => {
+      return !!date && !_this.blockedDates.has(date.toISO()!);
+    }
+  }
+
+  reservationConflicts() {
+    const reservationLength = this.reservationEndDate().diff(this.reservationStartDate(), 'days').days;
+    const reservationDates = [...Array(reservationLength).keys()].map(offset => this.reservationStartDate().plus({days: offset}));
+    return reservationDates.some(date => !this.isDateAvailable(date));
+  }
+
   isValid(): boolean {
     return this.guestName().length > 0 &&
+      !this.reservationConflicts() &&
       this.reservationStartDate() < this.reservationEndDate() &&
       this.reservationStartDate() >= this.weekStartDate &&
       this.reservationEndDate() <= this.weekEndDate &&
@@ -143,7 +188,7 @@ export class ReserveDialog {
     }
   }
 
-  canEditDates(): boolean {
+  canBookDaily(): boolean {
     return this.data.allowDailyReservations;
   }
 }
