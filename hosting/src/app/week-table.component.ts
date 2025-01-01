@@ -291,7 +291,7 @@ export class WeekTableComponent {
   }
 
   canAddDailyReservation(): boolean {
-    return this.canAddReservation() && this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
+    return this.canAddReservation() && (this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false);
   }
 
   canEditReservation(reservation: WeekReservation): boolean {
