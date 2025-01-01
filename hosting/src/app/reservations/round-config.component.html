@@ -15,6 +15,11 @@
             Booking limit: {{ round.bookedWeeksLimit }} weeks
           </li>
         }
+        @if (round.allowDailyReservations) {
+          <li>
+            Daily reservations allowed
+          </li>
+        }
       </ul>
     </li>
   </ul>

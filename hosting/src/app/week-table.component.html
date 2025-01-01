@@ -14,10 +14,42 @@
   <ng-container *ngFor="let unit of units" [matColumnDef]="unit.name">
     <th mat-header-cell *matHeaderCellDef> {{ unit.name }}</th>
     <td mat-cell *matCellDef="let weekRow">
-      @let unitReservations = weekRow.reservations[unit.id];
+      @let unitReservations = weekRow.reservations[unit.id] || [];
 
-      @if (unitReservations?.length > 1) {
-        Reserved by the day
+      @if (isReservedByDay(unitReservations)) {
+        <mat-accordion>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              Reserved by the day
+            </mat-expansion-panel-header>
+            <mat-list>
+              <mat-list-item *ngFor="let day of weekDates(weekRow)">
+                @let reservation = reservationForDay(unitReservations, day);
+                <span matListItemTitle>
+                  {{ day | shortDate }}
+                  @if (!!reservation && canEditReservation(reservation)) {
+                    <span style="float: right">
+                      <button mat-icon-button aria-label="Edit reservation"
+                              (click)="editReservation(reservation, weekRow)">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    </span>
+                  }
+                  @if (!reservation && canAddDailyReservation()) {
+                    <div class="add-button" style="float: right">
+                      <button mat-icon-button aria-label="Add reservation"
+                              (click)="addReservation(weekRow, unit, day, day.plus({days: 1}))">
+                        <mat-icon class="material-icons-outlined">add_box</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </span>
+                <span matListItemLine>{{ reservation?.guestName }}</span>
+                <span>{{ bookerName(reservation?.bookerId || "") || '' }}</span>
+              </mat-list-item>
+            </mat-list>
+          </mat-expansion-panel>
+        </mat-accordion>
       } @else if (unitReservations?.length === 1) {
         @let reservation = unitReservations[0];
         <div>
@@ -36,7 +68,7 @@
         @if (canAddReservation()) {
           <div class="add-button">
             <button mat-icon-button aria-label="Add reservation"
-                    (click)="addReservation(unit, weekRow.pricingTier, weekRow.startDate, weekRow.endDate)">
+                    (click)="addReservation(weekRow, unit, weekRow.startDate, weekRow.endDate)">
               <mat-icon class="material-icons-outlined">add_box</mat-icon>
             </button>
           </div>

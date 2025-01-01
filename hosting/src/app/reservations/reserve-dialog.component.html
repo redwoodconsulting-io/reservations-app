@@ -12,25 +12,34 @@
       <input matInput value="{{unit.name}}" readonly="true"/>
     </mat-form-field>
   </div>
+  @if (canBookDaily()) {
+    <div>
+      <mat-button-toggle-group
+        [(ngModel)]="bookingDaily"
+        aria-label="Booking daily"
+      >
+        <mat-button-toggle [value]="false" [disabled]="false && blockedDates.size > 0">Weekly</mat-button-toggle>
+        <mat-button-toggle [value]="true">Daily</mat-button-toggle>
+      </mat-button-toggle-group>
+      <div>&nbsp;</div>
+    </div>
+  }
   <div>
     <mat-form-field>
-      <mat-label>Start date</mat-label>
-      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="startPicker"
-             [(ngModel)]="reservationStartDate" readonly/>
-      <mat-datepicker-toggle matIconSuffix [for]="startPicker" disabled></mat-datepicker-toggle>
+      <mat-label>Check-in</mat-label>
+      <input matInput
+             [min]="weekStartDate"
+             [max]="bookingDaily() ? weekEndDate.plus({days: -1}) : weekStartDate"
+             [matDatepicker]="startPicker"
+             [(ngModel)]="reservationStartDate" [readonly]="!bookingDaily()" [matDatepickerFilter]="isDateAvailable"/>
+      <mat-datepicker-toggle matIconSuffix [for]="startPicker" [disabled]="!bookingDaily()"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
       <mat-error>Invalid date</mat-error>
     </mat-form-field>
+    <div>Check-out: {{ reservationEndDate() | shortDate }}</div>
+    <div>&nbsp;</div>
   </div>
   <div>
-    <mat-form-field>
-      <mat-label>End date</mat-label>
-      <input matInput [min]="weekStartDate" [max]="weekEndDate" [matDatepicker]="endPicker"
-             [(ngModel)]="reservationEndDate" readonly/>
-      <mat-datepicker-toggle matIconSuffix [for]="endPicker" disabled></mat-datepicker-toggle>
-      <mat-datepicker #endPicker></mat-datepicker>
-      <mat-error>Invalid date</mat-error>
-    </mat-form-field>
   </div>
   <div>
     <mat-form-field>
@@ -52,6 +61,11 @@
   <div>
     Reservation cost: {{ reservationCost() | currency }}
   </div>
+  @if (reservationConflicts()) {
+    <div>
+      <mat-error>Reservation conflicts with existing reservations</mat-error>
+    </div>
+  }
 </mat-dialog-content>
 <mat-dialog-actions>
   @if (data.existingReservationId) {
