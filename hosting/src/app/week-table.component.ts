@@ -343,6 +343,10 @@ export class WeekTableComponent {
     if (!reservation.bookerId) {
       errors.push("Booker is required.");
     }
+    const reservationLength = DateTime.fromISO(reservation.endDate).diff(DateTime.fromISO(reservation.startDate), 'days').days;
+    if (reservationLength != 1 && reservationLength != 7) {
+      errors.push("Reservation must be for 1 or 7 days.");
+    }
 
     if (errors.length) {
       this.dialog.open(ErrorDialog, {data: errors.join(' '), ...ANIMATION_SETTINGS});
@@ -383,9 +387,19 @@ export class WeekTableComponent {
     return booker?.name;
   }
 
+  weekDates(week: WeekRow): DateTime[] {
+    return [...Array(7).keys()].map((i) => week.startDate.plus({days: i}));
+  }
+
   isReservedByDay(reservations: WeekReservation[]): boolean {
     return reservations?.some(reservation => {
       return reservation.endDate.diff(reservation.startDate, 'days').days < 7;
+    });
+  }
+
+  reservationForDay(reservations: WeekReservation[], date: DateTime): WeekReservation | undefined {
+    return reservations.find(reservation => {
+      return reservation.startDate.equals(date);
     });
   }
 

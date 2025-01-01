@@ -23,9 +23,11 @@
               Reserved by the day
             </mat-expansion-panel-header>
             <mat-list>
-              @for (reservation of unitReservations; track reservation) {
-                <mat-list-item>
-                  @if (canEditReservation(reservation)) {
+              <mat-list-item *ngFor="let day of weekDates(weekRow)">
+                @let reservation = reservationForDay(unitReservations, day);
+                <span matListItemTitle>
+                  {{ day | shortDate }}
+                  @if (!!reservation && canEditReservation(reservation)) {
                     <span style="float: right">
                       <button mat-icon-button aria-label="Edit reservation"
                               (click)="editReservation(reservation, weekRow)">
@@ -33,17 +35,10 @@
                       </button>
                     </span>
                   }
-                  <span matListItemTitle>
-                    {{ reservation.guestName }}
-                  </span>
-                  <span matListItemLine>
-                    ({{ bookerName(reservation.bookerId) || 'unknown' }})
-                  </span>
-                  <span>
-                    {{ reservation.startDate | shortDate }} – {{ reservation.endDate | shortDate }}
-                  </span>
-                </mat-list-item>
-              }
+                </span>
+                <span matListItemLine>{{ reservation?.guestName }}</span>
+                <span>{{ bookerName(reservation?.bookerId || "") || '' }}</span>
+              </mat-list-item>
             </mat-list>
           </mat-expansion-panel>
         </mat-accordion>
