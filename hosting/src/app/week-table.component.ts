@@ -40,6 +40,8 @@ import {ErrorDialog} from './utility/error-dialog.component';
 import {CurrencyPipe} from './utility/currency-pipe';
 import {Auth} from '@angular/fire/auth';
 import {ReservationRoundsService} from './reservations/reservation-rounds-service';
+import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader} from '@angular/material/expansion';
+import {MatList, MatListItem, MatListItemLine, MatListItemTitle} from '@angular/material/list';
 
 interface WeekRow {
   startDate: DateTime;
@@ -81,6 +83,13 @@ interface WeekReservation {
     CurrencyPipe,
     MatIconButton,
     MatIcon,
+    MatAccordion,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatList,
+    MatListItem,
+    MatListItemLine,
+    MatListItemTitle,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
@@ -232,7 +241,15 @@ export class WeekTableComponent {
     const allowDailyReservations = this.isAdmin() || this.reservationsRoundsService.currentRound()?.allowDailyReservations || false;
 
     const dialogRef = this.dialog.open(ReserveDialog, {
-      data: {unit, tier, weekStartDate, weekEndDate, unitPricing, bookers: this.availableBookers(), allowDailyReservations},
+      data: {
+        unit,
+        tier,
+        weekStartDate,
+        weekEndDate,
+        unitPricing,
+        bookers: this.availableBookers(),
+        allowDailyReservations
+      },
       ...ANIMATION_SETTINGS,
     });
 
@@ -291,6 +308,8 @@ export class WeekTableComponent {
         tier,
         weekStartDate,
         weekEndDate,
+        startDate: reservation.startDate,
+        endDate: reservation.endDate,
         unitPricing,
         bookers,
         initialGuestName: reservation.guestName,
@@ -362,6 +381,12 @@ export class WeekTableComponent {
   bookerName(bookerId: string): string | undefined {
     const booker = this._bookers().find(it => it.id === bookerId);
     return booker?.name;
+  }
+
+  isReservedByDay(reservations: WeekReservation[]): boolean {
+    return reservations?.some(reservation => {
+      return reservation.endDate.diff(reservation.startDate, 'days').days < 7;
+    });
   }
 
   rowStyle(pricingTier: PricingTier) {
