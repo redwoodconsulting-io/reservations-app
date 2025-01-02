@@ -3,16 +3,16 @@ import {DateTime} from 'luxon';
 import {Timestamp} from '@angular/fire/firestore';
 
 @Pipe({
-  name: 'shortDate',
+  name: 'shortDateTime',
   standalone: true
 })
-export class ShortDate implements PipeTransform {
+export class ShortDateTime implements PipeTransform {
   transform(value: (DateTime | Timestamp | undefined)): string {
     if (!value) {
       return '';
     } else if (value instanceof Timestamp) {
       value = DateTime.fromMillis(value.toMillis());
     }
-    return value.toFormat('LLL dd');
+    return value.toFormat('LLL dd yyyy, HH:mm');
   }
 }

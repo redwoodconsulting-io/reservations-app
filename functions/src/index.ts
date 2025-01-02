@@ -14,47 +14,28 @@ export const modifyDocument =
       const docId = event.data?.before.id || event.data?.after.id;
       logger.info(`Reservation changed: ${docId}`);
 
-      const changes: { [key: string]: any } = {};
+      const previousData = event.data?.before.data();
+      const newData = event.data?.after.data();
 
       // Track the id becoming absent or present to
       // mean the document being deleted or created
-      if (event.data?.before.data() && !event.data?.after.data()) {
-        changes.id = {before: docId};
+      let changeType = "update";
+      if (previousData && !newData) {
+        changeType = "delete";
+      } else if (newData && !previousData) {
+        changeType = "create";
       }
-      if (event.data?.after.data() && !event.data?.before.data()) {
-        changes.id = {after: docId};
-      }
-
-      const previousValues = event.data?.before.data() || {};
-      const newValues = event.data?.after.data() || {};
-
-      Object.entries(previousValues).forEach(([key, value]) => {
-        const newValue = newValues[key];
-        if (key !== 'id' && newValue !== value) {
-          changes[key] = {
-            before: value,
-          };
-          if (newValue !== undefined) {
-            changes[key].after = newValue;
-          }
-        }
-      });
-      Object.entries(newValues).forEach(([key, value]) => {
-        if (key !== 'id' && previousValues[key] === undefined) {
-          changes[key] = {
-            after: value,
-          };
-        }
-      });
 
       const {authType, authId} = event;
       const who = authType === "system" ? "System" : (authId ? authId : "Unknown");
 
-      const startDate = ((newValues.startDate || previousValues.startDate) as string);
+      const startDate = ((previousData?.startDate || newData?.startDate || '1900') as string);
 
       db.collection("reservationsAuditLog").doc().create({
         reservationId: docId,
-        changes,
+        changeType: changeType,
+        before: event.data?.before.data() || {},
+        after: event.data?.after.data() || {},
         who: who,
         year: Number((startDate.substring(0, 4))),
         timestamp: new Date(),

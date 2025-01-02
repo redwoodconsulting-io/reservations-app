@@ -42,7 +42,7 @@
       [unitPricing]="(unitPricing$ | async) || {}"
     />
     <round-config [rounds$]="reservationRounds$" [bookers]="bookers"/>
-    <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers"/>
+    <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers" [units]="units"/>
   } @else {
     <p>
       Please log in

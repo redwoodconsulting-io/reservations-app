@@ -48,7 +48,9 @@ export interface ReservationAuditLog {
   year: number;
   reservationId: string;
   timestamp: Timestamp;
-  changes: { [key: string]: any };
+  changeType: string;
+  before: { [key: string]: any };
+  after: { [key: string]: any };
 }
 
 export interface ReservationRound {
