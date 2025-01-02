@@ -124,13 +124,6 @@ export class WeekTableComponent {
     const bookers = this._bookers();
     const unitPricing = this._unitPricing;
 
-    // Don't render table rows until all data is available.
-    // Exception: allow no current booker if admin.
-    if (!weeks.length || !(currentBooker || this.isAdmin()) || !units.length || !permissions || !Object.keys(pricingTiers).length || !reservations.length || !bookers.length || !Object.keys(unitPricing).length) {
-      this.tableRows$ = of([]);
-      return;
-    }
-
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     this.tableRows$ = of(
       weeks.map(week => {
@@ -155,7 +148,7 @@ export class WeekTableComponent {
         });
 
         const reservationsByUnit = weekReservations.reduce((acc: { [key: string]: WeekReservation[] }, reservation) => {
-          const key = reservation.unit.id;
+          const key = reservation.unit?.id;
           if (!acc[key]) {
             acc[key] = [];
           }
