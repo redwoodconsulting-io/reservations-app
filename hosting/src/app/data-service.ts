@@ -1,5 +1,5 @@
-import {inject, Injectable, Signal} from '@angular/core';
-import {catchError, filter, map, Observable} from 'rxjs';
+import {inject, Injectable, signal, Signal} from '@angular/core';
+import {BehaviorSubject, catchError, filter, map, Observable, Subscription} from 'rxjs';
 import {
   BookableUnit,
   Booker,
@@ -38,17 +38,18 @@ export class DataService {
   bookers: Signal<Booker[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<PricingTierMap>;
-  reservationRoundsConfig$: Observable<ReservationRoundsConfig>;
-  reservations$: Observable<Reservation[]>;
+  readonly reservationRoundsConfig$;
+  readonly reservations$: BehaviorSubject<Reservation[]>;
   reservationWeekCounts$: Observable<{ [key: string]: number }>;
   units$: Observable<BookableUnit[]>;
-  unitPricing$: Observable<UnitPricingMap>;
-  weeks$: Observable<ReservableWeek[]>;
+  readonly unitPricing$: BehaviorSubject<UnitPricingMap>;
+  weeks$: BehaviorSubject<ReservableWeek[]>;
 
   private readonly reservationsCollection;
 
-  // Eventually, this will be dynamic…
-  configYear = 2025;
+  activeYear = new BehaviorSubject(2025);
+  // FIXME: query for years present in weeks collection
+  availableYears = signal([2025, 2026, 2027]);
 
   constructor(firestore: Firestore) {
     this.firestore = firestore;
@@ -82,12 +83,9 @@ export class DataService {
       )
     );
 
+    const unitPricingCollection = collection(firestore, 'unitPricing')
+    const weeksCollection = collection(firestore, 'weeks');
     const reservationRoundsCollection = collection(firestore, 'reservationRounds');
-    const reservationRoundsQuery = query(reservationRoundsCollection, where('year', '==', this.configYear), limit(1));
-    this.reservationRoundsConfig$ = collectionData(reservationRoundsQuery).pipe(
-      map((it) => it[0] as ReservationRoundsConfig),
-    );
-
     this.reservationsCollection = collection(firestore, 'reservations').withConverter<Reservation>({
       fromFirestore: snapshot => {
         const {startDate, endDate, unitId, guestName, bookerId} = snapshot.data();
@@ -96,10 +94,65 @@ export class DataService {
       },
       toFirestore: (it: any) => it,
     });
-    const reservationsQuery = query(this.reservationsCollection, where('startDate', '>=', String(this.configYear)), where('endDate', '<', String(this.configYear + 1)));
-    this.reservations$ = collectionData(reservationsQuery).pipe() as Observable<Reservation[]>;
 
+    this.reservationRoundsConfig$ = new BehaviorSubject({
+      year: 1900,
+      rounds: [],
+      startDate: `1900-01-01`
+    } as ReservationRoundsConfig);
+    this.reservations$ = new BehaviorSubject([] as Reservation[]);
+    this.unitPricing$ = new BehaviorSubject({} as UnitPricingMap);
+    this.weeks$ = new BehaviorSubject([] as ReservableWeek[]);
+
+    let reservationRoundsConfigSubscription: Subscription;
+    let reservationsSubscription: Subscription;
+    let weeksSubscription: Subscription;
+    let unitPricingSubscription: Subscription;
+
+    this.activeYear.subscribe(year => {
+      console.info(`Using data for year: ${year}`);
+
+      reservationRoundsConfigSubscription?.unsubscribe();
+      const reservationRoundsQuery = query(reservationRoundsCollection, where('year', '==', year), limit(1));
+      reservationRoundsConfigSubscription = collectionData(reservationRoundsQuery).subscribe((it) => {
+        if (it.length === 0) {
+          this.reservationRoundsConfig$.next({
+            year: year,
+            rounds: [],
+            startDate: `${year}-01-01`
+          } as ReservationRoundsConfig);
+        } else {
+          this.reservationRoundsConfig$.next(it[0] as ReservationRoundsConfig);
+        }
+      });
+
+      reservationsSubscription?.unsubscribe();
+      const reservationsQuery = query(this.reservationsCollection, where('startDate', '>=', String(year)), where('endDate', '<', String(year + 1)));
+      reservationsSubscription = collectionData(reservationsQuery).subscribe((it) => {
+        this.reservations$.next(it as Reservation[]);
+      });
+
+      unitPricingSubscription?.unsubscribe();
+      const unitPricingQuery = query(unitPricingCollection, where('year', '==', year));
+      unitPricingSubscription = collectionData(unitPricingQuery).subscribe((it) => {
+        this.unitPricing$.next(this.unitPricingsToMap(it as UnitPricing[]));
+      });
+
+      weeksSubscription?.unsubscribe();
+      const weeksQuery = query(weeksCollection, where('year', '==', year), limit(1));
+      weeksSubscription = collectionData(weeksQuery).subscribe((it) => {
+        if (it.length === 0) {
+          this.weeks$.next([] as ReservableWeek[]);
+        } else {
+          const configData = it[0] as ConfigData;
+          this.weeks$.next(configData.weeks as ReservableWeek[]);
+        }
+      });
+    });
+
+    // Data not connected to years
     const bookersCollection = collection(firestore, 'bookers').withConverter<Booker>({
+      // We need this to add in the id field.
       fromFirestore: snapshot => {
         const {name, userId} = snapshot.data();
         const {id} = snapshot;
@@ -111,8 +164,8 @@ export class DataService {
       catchError((_error, caught) => caught)
     ), {initialValue: []});
 
-    // Get the bookable unit documents … with the ID field.
     const bookableUnitsCollection = collection(firestore, 'units').withConverter<BookableUnit>({
+      // We need this to add in the id field.
       fromFirestore: snapshot => {
         const {name} = snapshot.data();
         const {id} = snapshot;
@@ -123,40 +176,7 @@ export class DataService {
     this.units$ = collectionData(bookableUnitsCollection).pipe();
 
     this.reservationWeekCounts$ = this.reservations$.pipe(
-      map(reservations => {
-        return reservations.reduce((acc, reservation) => {
-          const key = reservation.bookerId;
-          if (!acc[key]) {
-            acc[key] = 0;
-          }
-          acc[key]++;
-          return acc;
-        }, {} as { [key: string]: number });
-      })
-    );
-
-    const unitPricingCollection = collection(firestore, 'unitPricing')
-    this.unitPricing$ = collectionData(unitPricingCollection).pipe(
-      map(it => it as UnitPricing[]),
-      map(
-        it => {
-          return it.reduce((acc, unitPricing) => {
-            const key = unitPricing.unitId;
-            if (!acc[key]) {
-              acc[key] = [];
-            }
-            acc[key].push(unitPricing);
-            return acc;
-          }, {} as UnitPricingMap);
-        }
-      )
-    )
-
-    const weeksCollection = collection(firestore, 'weeks');
-    const weeksQuery = query(weeksCollection, where('year', '==', this.configYear), limit(1));
-    this.weeks$ = collectionData(weeksQuery).pipe(
-      map((it) => it[0] as ConfigData),
-      map((it) => it?.weeks || []),
+      map(this.reservationsToMap)
     );
   }
 
@@ -182,5 +202,27 @@ export class DataService {
     }
     const existingRef = doc(this.reservationsCollection, reservationId);
     return deleteDoc(existingRef);
+  }
+
+  private reservationsToMap(reservations: Reservation[]): { [key: string]: number } {
+    return reservations.reduce((acc, reservation) => {
+      const key = reservation.bookerId;
+      if (!acc[key]) {
+        acc[key] = 0;
+      }
+      acc[key]++;
+      return acc;
+    }, {} as { [key: string]: number });
+  }
+
+  private unitPricingsToMap(unitPricings: UnitPricing[]): UnitPricingMap {
+    return unitPricings.reduce((acc, unitPricing) => {
+      const key = unitPricing.unitId;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(unitPricing);
+      return acc;
+    }, {} as UnitPricingMap);
   }
 }
