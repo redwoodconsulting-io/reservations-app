@@ -2,8 +2,8 @@ import * as logger from "firebase-functions/logger";
 
 import {onDocumentWrittenWithAuthContext} from "firebase-functions/v2/firestore";
 
-const {initializeApp} = require('firebase-admin/app');
-const {getFirestore} = require('firebase-admin/firestore');
+import {initializeApp} from "firebase-admin/app";
+import {getFirestore} from "firebase-admin/firestore";
 
 initializeApp();
 const db = getFirestore();
@@ -29,7 +29,7 @@ export const modifyDocument =
       const {authType, authId} = event;
       const who = authType === "system" ? "System" : (authId ? authId : "Unknown");
 
-      const startDate = ((previousData?.startDate || newData?.startDate || '1900') as string);
+      const startDate = ((previousData?.startDate || newData?.startDate || "1900") as string);
 
       db.collection("reservationsAuditLog").doc().create({
         reservationId: docId,
