@@ -1,6 +1,6 @@
-import {Component, inject, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
+import {Component, inject, model, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {AsyncPipe, KeyValuePipe} from '@angular/common';
+import {AsyncPipe, KeyValuePipe, NgForOf} from '@angular/common';
 import {AuthComponent, authState} from './auth/auth.component';
 import {Auth, User} from '@angular/fire/auth';
 import {catchError, combineLatest, map, Observable} from 'rxjs';
@@ -24,6 +24,9 @@ import {RoundConfigComponent} from './reservations/round-config.component';
 import {BookerPickerComponent} from './utility/booker-picker.component';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {MatChip, MatChipSet} from '@angular/material/chips';
+import {MatFormField, MatOption, MatSelect} from '@angular/material/select';
+import {FormsModule} from '@angular/forms';
+import {MatLabel} from '@angular/material/form-field';
 
 
 @Component({
@@ -40,6 +43,12 @@ import {MatChip, MatChipSet} from '@angular/material/chips';
     MatChip,
     KeyValuePipe,
     MatChipSet,
+    MatSelect,
+    MatOption,
+    NgForOf,
+    MatFormField,
+    FormsModule,
+    MatLabel,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -72,6 +81,8 @@ export class AppComponent implements OnDestroy {
   currentUserSubscription;
   bookersSubscription;
 
+  currentYear = model(2025);
+
   constructor(dataService: DataService, reservationRoundsService: ReservationRoundsService) {
     this.dataService = dataService;
     this.bookers = dataService.bookers;
@@ -82,6 +93,10 @@ export class AppComponent implements OnDestroy {
     this.unitPricing$ = dataService.unitPricing$;
     this.units$ = dataService.units$;
     this.weeks$ = dataService.weeks$;
+
+    this.currentYear.subscribe(year => {
+      this.dataService.activeYear.next(year);
+    })
 
     this.bookersSubscription = combineLatest([toObservable(dataService.bookers), this.user$, toObservable(this.bookerIdOverride)]).subscribe(
       ([bookers, user, bookerIdOverride]) => {
