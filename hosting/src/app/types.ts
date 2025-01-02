@@ -1,3 +1,4 @@
+import {Timestamp} from '@angular/fire/firestore';
 import {DateTime} from 'luxon';
 
 export interface BookableUnit {
@@ -40,6 +41,14 @@ export interface Reservation {
   unitId: string;
   guestName: string;
   bookerId: string;
+}
+
+export interface ReservationAuditLog {
+  who: string;
+  year: number;
+  reservationId: string;
+  timestamp: Timestamp;
+  changes: { [key: string]: any };
 }
 
 export interface ReservationRound {

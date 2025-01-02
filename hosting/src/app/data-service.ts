@@ -9,6 +9,7 @@ import {
   PricingTierMap,
   ReservableWeek,
   Reservation,
+  ReservationAuditLog,
   ReservationRoundsConfig,
   UnitPricing,
   UnitPricingMap
@@ -41,6 +42,7 @@ export class DataService {
   pricingTiers$: Observable<PricingTierMap>;
   readonly reservationRoundsConfig$;
   readonly reservations$: BehaviorSubject<Reservation[]>;
+  readonly reservationsAuditLog$: BehaviorSubject<ReservationAuditLog[]>;
   reservationWeekCounts$: Observable<{ [key: string]: number }>;
   units$: Observable<BookableUnit[]>;
   readonly unitPricing$: BehaviorSubject<UnitPricingMap>;
@@ -87,6 +89,7 @@ export class DataService {
     const unitPricingCollection = collection(firestore, 'unitPricing')
     const weeksCollection = collection(firestore, 'weeks');
     const reservationRoundsCollection = collection(firestore, 'reservationRounds');
+    const reservationsAuditLogCollection = collection(firestore, 'reservationsAuditLog');
     this.reservationsCollection = collection(firestore, 'reservations').withConverter<Reservation>({
       fromFirestore: snapshot => {
         const {startDate, endDate, unitId, guestName, bookerId} = snapshot.data();
@@ -102,10 +105,12 @@ export class DataService {
       startDate: `1900-01-01`
     } as ReservationRoundsConfig);
     this.reservations$ = new BehaviorSubject([] as Reservation[]);
+    this.reservationsAuditLog$ = new BehaviorSubject([] as ReservationAuditLog[]);
     this.unitPricing$ = new BehaviorSubject({} as UnitPricingMap);
     this.weeks$ = new BehaviorSubject([] as ReservableWeek[]);
 
     let reservationRoundsConfigSubscription: Subscription;
+    let reservationsAuditLogSubscription: Subscription;
     let reservationsSubscription: Subscription;
     let weeksSubscription: Subscription;
     let unitPricingSubscription: Subscription;
@@ -142,6 +147,13 @@ export class DataService {
       const reservationsQuery = query(this.reservationsCollection, where('startDate', '>=', String(year)), where('endDate', '<', String(year + 1)));
       reservationsSubscription = collectionData(reservationsQuery).subscribe((it) => {
         this.reservations$.next(it as Reservation[]);
+      });
+
+      reservationsAuditLogSubscription?.unsubscribe();
+      const reservationsAuditLogQuery = query(reservationsAuditLogCollection, where('year', '==', year));
+      reservationsAuditLogSubscription = collectionData(reservationsAuditLogQuery).subscribe((it) => {
+        const sorted = (it as ReservationAuditLog[]).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+        this.reservationsAuditLog$.next(sorted);
       });
 
       unitPricingSubscription?.unsubscribe();
