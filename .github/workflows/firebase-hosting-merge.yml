@@ -58,11 +58,11 @@ jobs:
           FIREBASE_CLI_EXPERIMENTS: webframeworks
       - name: Deploy functions
         run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > google-application-credentials.json
-          firebase deploy --only functions
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > "google-application-credentials.json"
+          firebase deploy --only functions --non-interactive --debug
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: google-application-credentials.json
+          GOOGLE_APPLICATION_CREDENTIALS: "google-application-credentials.json"
       - name: Cleanup credentials
         if: always()
         run: |
-          rm google-application-credentials.json
+          rm "google-application-credentials.json"
