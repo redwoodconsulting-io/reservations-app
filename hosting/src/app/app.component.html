@@ -35,7 +35,7 @@
       [bookers]="bookers()"
       [currentBooker]="currentBooker()"
       [weeks]="(weeks$ | async) || []"
-      [units]="(units$ | async) || []"
+      [units]="units()"
       [permissions]="(permissions$ | async) || {adminUserIds: []}"
       [pricingTiers]="(pricingTiers$ | async) || {}"
       [reservations]="(reservations$ | async) || []"

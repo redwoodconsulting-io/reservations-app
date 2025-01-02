@@ -44,7 +44,7 @@ export class DataService {
   readonly reservations$: BehaviorSubject<Reservation[]>;
   readonly reservationsAuditLog$: BehaviorSubject<ReservationAuditLog[]>;
   reservationWeekCounts$: Observable<{ [key: string]: number }>;
-  units$: Observable<BookableUnit[]>;
+  units: Signal<BookableUnit[]>;
   readonly unitPricing$: BehaviorSubject<UnitPricingMap>;
   weeks$: BehaviorSubject<ReservableWeek[]>;
 
@@ -198,7 +198,9 @@ export class DataService {
       },
       toFirestore: (it: any) => it,
     });
-    this.units$ = collectionData(bookableUnitsCollection).pipe();
+    this.units = toSignal(collectionData(bookableUnitsCollection).pipe(
+      catchError((_error, caught) => caught)
+    ), {initialValue: []});
 
     this.reservationWeekCounts$ = this.reservations$.pipe(
       map(this.reservationsToMap)

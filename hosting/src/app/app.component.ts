@@ -76,7 +76,7 @@ export class AppComponent implements OnDestroy {
   reservationRounds$: Observable<ReservationRound[]>;
   reservations$: Observable<Reservation[]>;
   reservationsAuditLog$: Observable<ReservationAuditLog[]>;
-  units$: Observable<BookableUnit[]>;
+  units: Signal<BookableUnit[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<{ [key: string]: PricingTier }>;
   unitPricing$: Observable<UnitPricingMap>;
@@ -96,7 +96,7 @@ export class AppComponent implements OnDestroy {
     this.reservations$ = dataService.reservations$;
     this.reservationsAuditLog$ = dataService.reservationsAuditLog$;
     this.unitPricing$ = dataService.unitPricing$;
-    this.units$ = dataService.units$;
+    this.units = dataService.units;
     this.weeks$ = dataService.weeks$;
 
     this.currentYear.subscribe(year => {
