@@ -1,5 +1,5 @@
 import {inject, Injectable, signal, Signal} from '@angular/core';
-import {BehaviorSubject, catchError, filter, map, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, catchError, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {
   BookableUnit,
   Booker,
@@ -27,6 +27,7 @@ import {
 } from '@angular/fire/firestore';
 import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
+import {authState} from './auth/auth.component';
 
 @Injectable({
   providedIn: 'root',
@@ -51,7 +52,7 @@ export class DataService {
   // FIXME: query for years present in weeks collection
   availableYears = signal([2025, 2026, 2027]);
 
-  constructor(firestore: Firestore) {
+  constructor(firestore: Firestore, auth: Auth) {
     this.firestore = firestore;
 
     this.permissions$ = collectionData(
@@ -109,8 +110,19 @@ export class DataService {
     let weeksSubscription: Subscription;
     let unitPricingSubscription: Subscription;
 
-    this.activeYear.subscribe(year => {
+    // Reset the data when the user changes.
+    const a = authState(auth);
+    combineLatest([this.activeYear, a]).subscribe(([year, user]) => {
       console.info(`Using data for year: ${year}`);
+
+      // If the user is not logged in, don't bother fetching data.
+      // (It will be denied by permissions anyway.)
+      if (!user) {
+        reservationRoundsConfigSubscription?.unsubscribe();
+        reservationsSubscription?.unsubscribe();
+        weeksSubscription?.unsubscribe();
+        return;
+      }
 
       reservationRoundsConfigSubscription?.unsubscribe();
       const reservationRoundsQuery = query(reservationRoundsCollection, where('year', '==', year), limit(1));
@@ -150,7 +162,8 @@ export class DataService {
       });
     });
 
-    // Data not connected to years
+    // Data not connected to years:
+
     const bookersCollection = collection(firestore, 'bookers').withConverter<Booker>({
       // We need this to add in the id field.
       fromFirestore: snapshot => {
