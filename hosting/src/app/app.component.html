@@ -35,13 +35,14 @@
       [bookers]="bookers()"
       [currentBooker]="currentBooker()"
       [weeks]="(weeks$ | async) || []"
-      [units]="(units$ | async) || []"
+      [units]="units()"
       [permissions]="(permissions$ | async) || {adminUserIds: []}"
       [pricingTiers]="(pricingTiers$ | async) || {}"
       [reservations]="(reservations$ | async) || []"
       [unitPricing]="(unitPricing$ | async) || {}"
     />
     <round-config [rounds$]="reservationRounds$" [bookers]="bookers"/>
+    <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers" [units]="units"/>
   } @else {
     <p>
       Please log in

@@ -12,6 +12,7 @@ import {
   PricingTier,
   ReservableWeek,
   Reservation,
+  ReservationAuditLog,
   ReservationRound,
   UnitPricingMap
 } from './types';
@@ -27,6 +28,7 @@ import {MatChip, MatChipSet} from '@angular/material/chips';
 import {MatFormField, MatOption, MatSelect} from '@angular/material/select';
 import {FormsModule} from '@angular/forms';
 import {MatLabel} from '@angular/material/form-field';
+import {AuditLogComponent} from './reservations/audit-log.component';
 
 
 @Component({
@@ -49,6 +51,7 @@ import {MatLabel} from '@angular/material/form-field';
     MatFormField,
     FormsModule,
     MatLabel,
+    AuditLogComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
@@ -72,7 +75,8 @@ export class AppComponent implements OnDestroy {
   weeks$: Observable<ReservableWeek[]>;
   reservationRounds$: Observable<ReservationRound[]>;
   reservations$: Observable<Reservation[]>;
-  units$: Observable<BookableUnit[]>;
+  reservationsAuditLog$: Observable<ReservationAuditLog[]>;
+  units: Signal<BookableUnit[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<{ [key: string]: PricingTier }>;
   unitPricing$: Observable<UnitPricingMap>;
@@ -90,8 +94,9 @@ export class AppComponent implements OnDestroy {
     this.pricingTiers$ = dataService.pricingTiers$;
     this.reservationRounds$ = reservationRoundsService.reservationRounds$;
     this.reservations$ = dataService.reservations$;
+    this.reservationsAuditLog$ = dataService.reservationsAuditLog$;
     this.unitPricing$ = dataService.unitPricing$;
-    this.units$ = dataService.units$;
+    this.units = dataService.units;
     this.weeks$ = dataService.weeks$;
 
     this.currentYear.subscribe(year => {
