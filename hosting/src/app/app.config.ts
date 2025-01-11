@@ -21,6 +21,8 @@ export const ANIMATION_SETTINGS = {
   exitAnimationDuration: "250ms",
 }
 
+export const FLOOR_PLANS_FOLDER = 'floorPlans';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({eventCoalescing: true}),

@@ -29,6 +29,7 @@ import {
 import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {authState} from './auth/auth.component';
+import {listAll, ref, Storage} from '@angular/fire/storage';
 
 @Injectable({
   providedIn: 'root',
@@ -48,13 +49,15 @@ export class DataService {
   readonly unitPricing$: BehaviorSubject<UnitPricingMap>;
   weeks$: BehaviorSubject<ReservableWeek[]>;
 
+  readonly floorPlanFilenames: Signal<string[]>;
+
   private readonly reservationsCollection;
 
   activeYear = new BehaviorSubject(2025);
   // FIXME: query for years present in weeks collection
   availableYears = signal([2025, 2026, 2027]);
 
-  constructor(firestore: Firestore, auth: Auth) {
+  constructor(firestore: Firestore, auth: Auth, storage: Storage) {
     this.firestore = firestore;
 
     this.permissions$ = collectionData(
@@ -205,6 +208,14 @@ export class DataService {
     this.reservationWeekCounts$ = this.reservations$.pipe(
       map(this.reservationsToMap)
     );
+
+    const floorPlanFilenamesSignal = signal<string[]>([])
+    this.floorPlanFilenames = floorPlanFilenamesSignal
+    const floorPlansRoot = ref(storage, 'floorPlans');
+    listAll(floorPlansRoot).then(listResult => {
+      const items = listResult.items.map(it => it.name);
+      floorPlanFilenamesSignal.set(items);
+    });
   }
 
   addReservation(reservation: Reservation) {

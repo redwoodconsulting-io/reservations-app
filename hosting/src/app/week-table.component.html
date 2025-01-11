@@ -12,7 +12,19 @@
 
   <!-- Unit Columns -->
   <ng-container *ngFor="let unit of units" [matColumnDef]="unit.name">
-    <th mat-header-cell *matHeaderCellDef> {{ unit.name }}</th>
+    <th mat-header-cell *matHeaderCellDef>
+      @if (canEditUnit()) {
+        <div class="mat-button-small" style="float: left">
+          <button mat-icon-button aria-label="Edit unit" (click)="editUnit(unit)">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      }
+      <div>{{ unit.name }}</div>
+      @if (unit.floorPlanFilename) {
+        <div><a href="{{downloadUrls[unit.id] | async}}">Floor plan</a></div>
+      }
+    </th>
     <td mat-cell *matCellDef="let weekRow">
       @let unitReservations = weekRow.reservations[unit.id] || [];
 
@@ -57,7 +69,7 @@
             {{ reservation.guestName }} ({{ bookerName(reservation.bookerId) || 'unknown' }})
           </span>
           @if (canEditReservation(reservation)) {
-            <span class="mat-button-small" style="float: right">
+            <span class="mat-button-small" style="float: left">
               <button mat-icon-button aria-label="Edit reservation" (click)="editReservation(reservation, weekRow)">
                 <mat-icon>edit</mat-icon>
               </button>
