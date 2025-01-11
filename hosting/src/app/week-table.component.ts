@@ -326,18 +326,23 @@ export class WeekTableComponent {
   }
 
   editUnit(unit: BookableUnit) {
-      const dialogRef = this.dialog.open(EditUnitDialog, {
-        data: {
-          unitName: unit.name,
-          existingUnitId: unit.id,
-          floorPlanFilename: unit.floorPlanFilename,
-          unitPricing: this._unitPricing[unit.id] || [],
-        },
-        ...ANIMATION_SETTINGS,
+    const dialogRef = this.dialog.open(EditUnitDialog, {
+      data: {
+        unitName: unit.name,
+        existingUnitId: unit.id,
+        floorPlanFilename: unit.floorPlanFilename,
+        unitPricing: this._unitPricing[unit.id] || [],
+      },
+      ...ANIMATION_SETTINGS,
+    });
+    dialogRef.componentInstance.unit.subscribe((unit: BookableUnit) => {
+      this.dataService.updateUnit(unit).then(() => {
+        console.log('Unit updated');
+        dialogRef.close()
+      }).catch((error) => {
+        this.dialog.open(ErrorDialog, {data: `Couldn't update unit: ${error.message}`, ...ANIMATION_SETTINGS});
       });
-      dialogRef.componentInstance.unit.subscribe((unit: BookableUnit) => {
-        console.log('Save unit', unit);
-      });
+    });
 
       dialogRef.componentInstance.deleteUnit.subscribe(() => {
         console.log('Delete unit', unit);

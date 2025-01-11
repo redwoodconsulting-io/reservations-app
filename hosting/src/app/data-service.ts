@@ -218,6 +218,15 @@ export class DataService {
     });
   }
 
+  updateUnit(unit: BookableUnit) {
+    if (!unit.id) {
+      throw new Error('Unit ID must be set.');
+    }
+    const unitsCollection = collection(this.firestore, 'units');
+    const existingRef = doc(unitsCollection, unit.id);
+    return updateDoc(existingRef, {...unit});
+  }
+
   addReservation(reservation: Reservation) {
     if (reservation.id) {
       throw new Error('Reservation ID must not be set.');
