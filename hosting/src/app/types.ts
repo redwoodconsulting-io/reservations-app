@@ -5,6 +5,7 @@ export interface BookableUnit {
   id: string;
   name: string;
   floorPlanFilename: string;
+  notesMarkdown: string;
 }
 
 export interface Booker {

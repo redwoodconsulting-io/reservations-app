@@ -197,9 +197,9 @@ export class DataService {
     const bookableUnitsCollection = collection(firestore, 'units').withConverter<BookableUnit>({
       // We need this to add in the id field.
       fromFirestore: snapshot => {
-        const {name, floorPlanFilename} = snapshot.data();
+        const {name, floorPlanFilename, notesMarkdown} = snapshot.data();
         const {id} = snapshot;
-        return {id, name, floorPlanFilename: floorPlanFilename};
+        return {id, name, floorPlanFilename, notesMarkdown};
       },
       toFirestore: (it: any) => it,
     });

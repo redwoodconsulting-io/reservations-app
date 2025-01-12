@@ -43,6 +43,10 @@ $reservations-app-theme: mat.define-theme((
   @include mat.button-color($reservations-app-theme, $color-variant: secondary);
 }
 
+.tertiary-button {
+  @include mat.button-color($reservations-app-theme, $color-variant: tertiary);
+}
+
 .error-button {
   @include mat.button-color($reservations-app-theme, $color-variant: error);
 }
@@ -65,6 +69,10 @@ body {
 .mat-button-small {
   @include mat.button-density(-10);
   @include mat.icon-button-density(-10);
+}
+
+.vertical-middle {
+  vertical-align: middle;
 }
 
 main {
