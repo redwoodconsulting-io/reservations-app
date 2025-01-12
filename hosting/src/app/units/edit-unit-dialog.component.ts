@@ -15,6 +15,7 @@ import {BookableUnit, UnitPricing} from '../types';
 import {DataService} from '../data-service';
 import {MatOption} from '@angular/material/core';
 import {MatSelect} from '@angular/material/select';
+import {RouterLink} from '@angular/router';
 
 export interface EditUnitDialogData {
   unitPricing: UnitPricing[];
@@ -41,7 +42,7 @@ export interface EditUnitDialogData {
     MatInputModule,
     MatOption,
     MatSelect,
-
+    RouterLink,
   ]
 })
 export class EditUnitDialog {
