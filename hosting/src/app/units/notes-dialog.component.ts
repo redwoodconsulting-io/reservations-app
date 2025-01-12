@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, HostListener, Inject, inject,} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, Inject, inject, SecurityContext,} from '@angular/core';
 import {MatButton} from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -10,6 +10,8 @@ import {
 } from '@angular/material/dialog';
 import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
+import {DomSanitizer} from '@angular/platform-browser';
+import {marked} from 'marked';
 
 export interface NotesDialogData {
   notesMarkdown: string;
@@ -33,14 +35,19 @@ export interface NotesDialogData {
   ]
 })
 export class NotesDialog {
+  readonly domSanitizer = inject(DomSanitizer);
   readonly dialogRef = inject(MatDialogRef<NotesDialog>);
 
   unitName: string;
   notesMarkdown: string;
+  renderedMarkdown: string;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: NotesDialogData) {
     this.unitName = data.unitName;
     this.notesMarkdown = data.notesMarkdown;
+
+    const parsedMarkdown = marked.parse(data.notesMarkdown);
+    this.renderedMarkdown = this.domSanitizer.sanitize(SecurityContext.HTML, parsedMarkdown) || "";
   }
 
   @HostListener('window:keyup.Enter', ['$event'])

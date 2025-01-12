@@ -2,9 +2,7 @@
   {{ unitName }}
 </h2>
 <mat-dialog-content>
-  <div>
-    {{ notesMarkdown }}
-  </div>
+  <div [innerHTML]="renderedMarkdown"></div>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button class="primary-button" [mat-dialog-close]="null">Close</button>
