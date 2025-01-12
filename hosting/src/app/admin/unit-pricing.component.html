@@ -1,0 +1,17 @@
+<mat-form-field>
+  <mat-select [(ngModel)]="selectedUnitId" placeholder="Select a unit…">
+    <mat-option *ngFor="let unit of units()" [value]="unit.id">{{ unit.name }}</mat-option>
+  </mat-select>
+</mat-form-field>
+
+@if (unit()) {
+  <mat-card>
+    <mat-card-header>
+      <h1>Unit pricing for {{ unit()?.name }} in {{ year() }}</h1>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+}
