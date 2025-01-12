@@ -78,5 +78,20 @@ export class FloorPlanComponent {
     });
   }
 
+  delete(filename: string) {
+    if (!confirm(`Really delete floor plan "${filename}"? This cannot be undone.`)) {
+      return;
+    }
+
+    const rootRef = ref(this.storage, FLOOR_PLANS_FOLDER);
+    this.dataService.deleteFloorPlan(ref(rootRef, filename)).then(() => {
+      this.snackBar.open(`Floor plan deleted: ${filename}`, 'OK', {
+        duration: 3000
+      });
+    }).catch(error => {
+      this.dialog.open(ErrorDialog, {data: `Couldn't delete floor plan: ${error.message}`, ...ANIMATION_SETTINGS});
+    });
+  }
+
   protected readonly alert = alert;
 }

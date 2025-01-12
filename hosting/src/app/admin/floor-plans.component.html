@@ -10,7 +10,7 @@
             <a mat-icon-button href="{{floorPlanDownloadUrls()[floorPlanFilename] | async}}">
               <mat-icon>visibility</mat-icon>
             </a>
-            <button mat-icon-button aria-label="Delete" (click)="alert('hi')">
+            <button mat-icon-button aria-label="Delete" (click)="delete(floorPlanFilename)">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

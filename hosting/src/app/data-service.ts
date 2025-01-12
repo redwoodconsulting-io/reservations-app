@@ -29,7 +29,7 @@ import {
 import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {authState} from './auth/auth.component';
-import {listAll, ref, Storage, StorageReference, uploadBytes} from '@angular/fire/storage';
+import {deleteObject, listAll, ref, Storage, StorageReference, uploadBytes} from '@angular/fire/storage';
 import {FLOOR_PLANS_FOLDER} from './app.config';
 
 @Injectable({
@@ -268,6 +268,11 @@ export class DataService {
       acc[key].push(unitPricing);
       return acc;
     }, {} as UnitPricingMap);
+  }
+
+  async deleteFloorPlan(storageRef: StorageReference) {
+    await deleteObject(storageRef);
+    this.refreshFloorPlans();
   }
 
   async uploadFloorPlan(storageRef: StorageReference, file: File) {
