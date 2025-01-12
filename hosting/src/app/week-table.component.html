@@ -13,18 +13,29 @@
   <!-- Unit Columns -->
   @for (unit of units; track unit.id) {
     <ng-container [matColumnDef]="unit.name">
-      <th mat-header-cell *matHeaderCellDef>
+      <th class="unit-header" mat-header-cell *matHeaderCellDef>
         @if (canEditUnit()) {
-          <div class="mat-button-small" style="float: left">
+          <div class="mat-button-small" class="edit-unit">
             <button mat-icon-button aria-label="Edit unit" (click)="editUnit(unit)">
               <mat-icon>edit</mat-icon>
             </button>
           </div>
         }
-        <div>{{ unit.name }}</div>
-        @if (unit.floorPlanFilename) {
-          <div><a href="{{downloadUrls[unit.id] | async}}">Floor plan</a></div>
-        }
+        <div class="unit-header">
+          <div>{{ unit.name }}</div>
+          @if (unit.floorPlanFilename) {
+            <div>
+              <mat-icon class="vertical-middle">gite</mat-icon>
+              <a mat-button href="{{downloadUrls[unit.id] | async}}" target="_blank">Floor plan</a>
+            </div>
+          }
+          @if (unit.notesMarkdown) {
+            <div>
+              <mat-icon class="vertical-middle">description</mat-icon>
+              <button mat-button class="vertical-middle" (click)="openNotesDialog(unit)">Notes</button>
+            </div>
+          }
+        </div>
       </th>
       <td mat-cell *matCellDef="let weekRow">
         @let unitReservations = weekRow.reservations[unit.id] || [];

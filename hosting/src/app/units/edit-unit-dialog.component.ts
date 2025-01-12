@@ -21,6 +21,7 @@ export interface EditUnitDialogData {
   unitPricing: UnitPricing[];
   unitName: string;
   floorPlanFilename: string;
+  notesMarkdown: string;
   existingUnitId?: string;
 }
 
@@ -50,6 +51,7 @@ export class EditUnitDialog {
 
   unitName = model('')
   floorPlanFilename = model('')
+  notesMarkdown = model('');
 
   readonly existingUnitId: string | undefined;
   readonly unitPricing: UnitPricing[];
@@ -62,12 +64,17 @@ export class EditUnitDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public data: EditUnitDialogData) {
     this.unitPricing = data.unitPricing;
     this.unitName.set(data.unitName);
+    this.notesMarkdown.set(data.notesMarkdown);
     this.floorPlanFilename.set(data.floorPlanFilename || "");
     this.existingUnitId = data.existingUnitId;
   }
 
   @HostListener('window:keyup.Enter', ['$event'])
   onKeyPress(_event: KeyboardEvent): void {
+    // Don't close the dialog on enter if we're typing in the text area
+    if (document.activeElement instanceof HTMLTextAreaElement) {
+      return
+    }
     if (this.isValid()) {
       this.onSubmit();
     }
@@ -82,6 +89,7 @@ export class EditUnitDialog {
       id: this.existingUnitId || '',
       name: this.unitName(),
       floorPlanFilename: this.floorPlanFilename(),
+      notesMarkdown: this.notesMarkdown(),
     });
   }
 

@@ -7,3 +7,22 @@
 .add-button {
   text-align: center;
 }
+
+div.edit-unit {
+  display: inline-block;
+  vertical-align: top;
+}
+
+div.unit-header {
+  display: inline-block;
+}
+
+table {
+  margin-top: 1em;
+}
+
+th.unit-header {
+  padding-top: 0.75em;
+  padding-bottom: 0.75em;
+  vertical-align: top;
+}

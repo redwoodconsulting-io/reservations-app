@@ -30,7 +30,7 @@ import {
   UnitPricingMap
 } from './types';
 import {DataService} from './data-service';
-import {MatIconButton} from '@angular/material/button';
+import {MatAnchor, MatButton, MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {ReserveDialog, ReserveDialogData} from './reservations/reserve-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
@@ -44,6 +44,7 @@ import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader} from '@angular
 import {MatList, MatListItem, MatListItemLine, MatListItemTitle} from '@angular/material/list';
 import {getDownloadURL, ref, Storage} from '@angular/fire/storage';
 import {EditUnitDialog} from './units/edit-unit-dialog.component';
+import {NotesDialog} from './units/notes-dialog.component';
 
 
 interface WeekRow {
@@ -94,6 +95,8 @@ interface WeekReservation {
     MatListItemLine,
     MatListItemTitle,
     AsyncPipe,
+    MatButton,
+    MatAnchor,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
@@ -123,14 +126,10 @@ export class WeekTableComponent {
   displayedColumns: string[] = [];
 
   buildTableRows() {
-    const currentBooker = this._currentBooker();
     const weeks = this._weeks;
     const units = this._units;
-    const permissions = this._permissions;
     const pricingTiers = this._pricingTiers;
     const reservations = this._reservations;
-    const bookers = this._bookers();
-    const unitPricing = this._unitPricing;
 
     this.displayedColumns = ['week', ...units.map(unit => unit.name)];
     this.tableRows$ = of(
@@ -327,10 +326,12 @@ export class WeekTableComponent {
 
   editUnit(unit: BookableUnit) {
     const dialogRef = this.dialog.open(EditUnitDialog, {
+      minWidth: '40vw',
       data: {
         unitName: unit.name,
         existingUnitId: unit.id,
         floorPlanFilename: unit.floorPlanFilename,
+        notesMarkdown: unit.notesMarkdown || "",
         unitPricing: this._unitPricing[unit.id] || [],
       },
       ...ANIMATION_SETTINGS,
@@ -344,9 +345,9 @@ export class WeekTableComponent {
       });
     });
 
-      dialogRef.componentInstance.deleteUnit.subscribe(() => {
-        console.log('Delete unit', unit);
-      });
+    dialogRef.componentInstance.deleteUnit.subscribe(() => {
+      console.log('Delete unit', unit);
+    });
   }
 
   editReservation(reservation: WeekReservation, week: WeekRow) {
@@ -429,6 +430,17 @@ export class WeekTableComponent {
       console.log('Reservation deleted');
     }).catch((error) => {
       this.dialog.open(ErrorDialog, {data: `Couldn't delete reservation: ${error.message}`, ...ANIMATION_SETTINGS});
+    });
+  }
+
+  openNotesDialog(unit: BookableUnit) {
+    this.dialog.open(NotesDialog, {
+      minWidth: '40vw',
+      data: {
+        unitName: unit.name,
+        notesMarkdown: unit.notesMarkdown || "",
+      },
+      ...ANIMATION_SETTINGS,
     });
   }
 
