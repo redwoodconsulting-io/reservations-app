@@ -1,6 +1,6 @@
 import {
   ChangeDetectionStrategy,
-  Component,
+  Component, computed,
   Input,
   model,
   OnDestroy,
@@ -35,6 +35,10 @@ export class BookerPickerComponent implements OnDestroy {
   _bookerId = model('');
   @Input()
   bookers: Signal<Booker[]> = signal([]);
+
+  sortedBookers = computed(() => {
+      return this.bookers().sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   bookerSubscription?: OutputRefSubscription;
 

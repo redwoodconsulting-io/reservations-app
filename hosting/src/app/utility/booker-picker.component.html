@@ -4,7 +4,7 @@
       <mat-label>Booking as</mat-label>
       <mat-select [(ngModel)]="_bookerId">
         <mat-option [value]="''">Admin</mat-option>
-        <mat-option *ngFor="let booker of bookers()" [value]="booker.id">
+        <mat-option *ngFor="let booker of sortedBookers()" [value]="booker.id">
           {{ booker.name }}
         </mat-option>
       </mat-select>
