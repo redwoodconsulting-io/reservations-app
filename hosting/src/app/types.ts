@@ -81,6 +81,7 @@ export interface ReservationRoundsConfig {
 }
 
 export interface UnitPricing {
+  id: string;
   year: number;
   tierId: string;
   unitId: string;

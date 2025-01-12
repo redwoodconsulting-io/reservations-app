@@ -91,7 +91,15 @@ export class DataService {
       )
     );
 
-    const unitPricingCollection = collection(firestore, 'unitPricing')
+    const unitPricingCollection = collection(firestore, 'unitPricing').withConverter<UnitPricing>({
+      // We need this to add in the id field.
+      fromFirestore: snapshot => {
+        const {year, tierId, unitId, weeklyPrice, dailyPrice} = snapshot.data();
+        const {id} = snapshot;
+        return {id, year, tierId, unitId, weeklyPrice, dailyPrice};
+      },
+      toFirestore: (it: any) => it,
+    });
     const weeksCollection = collection(firestore, 'weeks');
     const reservationRoundsCollection = collection(firestore, 'reservationRounds');
     const reservationsAuditLogCollection = collection(firestore, 'reservationsAuditLog');
@@ -246,6 +254,21 @@ export class DataService {
     }
     const existingRef = doc(this.reservationsCollection, reservationId);
     return deleteDoc(existingRef);
+  }
+
+  setUnitPricing(year: number, unitId: string, unitPricings: UnitPricing[]) {
+    const unitPricingCollection = collection(this.firestore, 'unitPricing');
+
+    const promises = unitPricings.map(unitPricing => {
+      if (unitPricing.id) {
+        const existingRef = doc(unitPricingCollection, unitPricing.id);
+        return updateDoc(existingRef, {...unitPricing});
+      } else {
+        return addDoc(unitPricingCollection, unitPricing);
+      }
+    });
+
+    return Promise.all(promises);
   }
 
   private reservationsToMap(reservations: Reservation[]): { [key: string]: number } {

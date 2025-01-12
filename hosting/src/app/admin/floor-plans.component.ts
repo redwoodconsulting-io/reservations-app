@@ -92,6 +92,4 @@ export class FloorPlanComponent {
       this.dialog.open(ErrorDialog, {data: `Couldn't delete floor plan: ${error.message}`, ...ANIMATION_SETTINGS});
     });
   }
-
-  protected readonly alert = alert;
 }
