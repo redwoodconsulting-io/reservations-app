@@ -1,5 +1,5 @@
 import {Component, inject, Input, signal, WritableSignal} from '@angular/core';
-import {KeyValuePipe, NgForOf} from '@angular/common';
+import {AsyncPipe, KeyValuePipe, NgForOf} from '@angular/common';
 import {
   MatCell,
   MatCellDef,
@@ -17,7 +17,7 @@ import {
   MatTable
 } from '@angular/material/table';
 import {ShortDate} from './utility/short-date.pipe';
-import {Observable, of} from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import {
   BookableUnit,
   Booker,
@@ -35,13 +35,16 @@ import {MatIcon} from '@angular/material/icon';
 import {ReserveDialog, ReserveDialogData} from './reservations/reserve-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {DateTime} from 'luxon';
-import {ANIMATION_SETTINGS} from './app.config';
+import {ANIMATION_SETTINGS, FLOOR_PLANS_FOLDER} from './app.config';
 import {ErrorDialog} from './utility/error-dialog.component';
 import {CurrencyPipe} from './utility/currency-pipe';
 import {Auth} from '@angular/fire/auth';
 import {ReservationRoundsService} from './reservations/reservation-rounds-service';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader} from '@angular/material/expansion';
 import {MatList, MatListItem, MatListItemLine, MatListItemTitle} from '@angular/material/list';
+import {getDownloadURL, ref, Storage} from '@angular/fire/storage';
+import {EditUnitDialog} from './units/edit-unit-dialog.component';
+
 
 interface WeekRow {
   startDate: DateTime;
@@ -90,6 +93,7 @@ interface WeekReservation {
     MatListItem,
     MatListItemLine,
     MatListItemTitle,
+    AsyncPipe,
   ],
   templateUrl: './week-table.component.html',
   styleUrl: './week-table.component.css'
@@ -99,6 +103,7 @@ export class WeekTableComponent {
   private readonly dataService = inject(DataService);
   private readonly dialog = inject(MatDialog);
   private readonly reservationsRoundsService = inject(ReservationRoundsService);
+  private readonly storage = inject(Storage)
 
   // Input fields
   private _bookers: WritableSignal<Booker[]> = signal([]);
@@ -109,6 +114,9 @@ export class WeekTableComponent {
   private _units: BookableUnit[] = [];
   private _weeks: ReservableWeek[] = [];
   private _unitPricing: UnitPricingMap = {};
+
+  // Download URLs are generated asynchronously
+  protected downloadUrls: { [key: string]: Observable<string> } = {};
 
   // Main table fields
   tableRows$: Observable<WeekRow[]> = of([])
@@ -177,6 +185,15 @@ export class WeekTableComponent {
   @Input()
   set units(value: BookableUnit[]) {
     this._units = value;
+    const rootRef = ref(this.storage, FLOOR_PLANS_FOLDER);
+
+    this.downloadUrls = value.reduce((acc, unit) => {
+      if (unit.floorPlanFilename) {
+        acc[unit.id] = from(getDownloadURL(ref(rootRef, unit.floorPlanFilename)))
+      }
+      return acc;
+    }, {} as { [key: string]: Observable<string> });
+
     this.buildTableRows();
   }
 
@@ -294,6 +311,10 @@ export class WeekTableComponent {
     return reservation.bookerId === this._currentBooker()?.id;
   }
 
+  canEditUnit(): boolean {
+    return this.isAdmin();
+  }
+
   blockedDaysFor(reservations: WeekReservation[], reservation?: WeekReservation) {
     const otherReservations = reservations?.filter(it => it.id !== reservation?.id) || [];
 
@@ -302,6 +323,30 @@ export class WeekTableComponent {
       return [...Array(days).keys()].map(offset => otherReservation.startDate.plus({days: offset}).toISO());
     }));
 
+  }
+
+  editUnit(unit: BookableUnit) {
+    const dialogRef = this.dialog.open(EditUnitDialog, {
+      data: {
+        unitName: unit.name,
+        existingUnitId: unit.id,
+        floorPlanFilename: unit.floorPlanFilename,
+        unitPricing: this._unitPricing[unit.id] || [],
+      },
+      ...ANIMATION_SETTINGS,
+    });
+    dialogRef.componentInstance.unit.subscribe((unit: BookableUnit) => {
+      this.dataService.updateUnit(unit).then(() => {
+        console.log('Unit updated');
+        dialogRef.close()
+      }).catch((error) => {
+        this.dialog.open(ErrorDialog, {data: `Couldn't update unit: ${error.message}`, ...ANIMATION_SETTINGS});
+      });
+    });
+
+      dialogRef.componentInstance.deleteUnit.subscribe(() => {
+        console.log('Delete unit', unit);
+      });
   }
 
   editReservation(reservation: WeekReservation, week: WeekRow) {

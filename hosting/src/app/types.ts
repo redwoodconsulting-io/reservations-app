@@ -4,6 +4,7 @@ import {DateTime} from 'luxon';
 export interface BookableUnit {
   id: string;
   name: string;
+  floorPlanFilename: string;
 }
 
 export interface Booker {

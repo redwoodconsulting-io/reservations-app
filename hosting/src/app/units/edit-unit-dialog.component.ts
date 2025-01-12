@@ -1,0 +1,93 @@
+import {ChangeDetectionStrategy, Component, HostListener, Inject, inject, model, output,} from '@angular/core';
+import {MatButton} from '@angular/material/button';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import {FormsModule} from '@angular/forms';
+import {MatFormField, MatLabel} from '@angular/material/form-field';
+import {MatInput, MatInputModule} from '@angular/material/input';
+import {BookableUnit, UnitPricing} from '../types';
+import {DataService} from '../data-service';
+import {MatOption} from '@angular/material/core';
+import {MatSelect} from '@angular/material/select';
+import {RouterLink} from '@angular/router';
+
+export interface EditUnitDialogData {
+  unitPricing: UnitPricing[];
+  unitName: string;
+  floorPlanFilename: string;
+  existingUnitId?: string;
+}
+
+@Component({
+  selector: 'edit-unit-dialog',
+  templateUrl: 'edit-unit-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    MatDialogContent,
+    MatFormField,
+    MatDialogActions,
+    MatDialogClose,
+    MatButton,
+    MatInput,
+    MatLabel,
+    MatDialogTitle,
+    FormsModule,
+    MatInputModule,
+    MatOption,
+    MatSelect,
+    RouterLink,
+  ]
+})
+export class EditUnitDialog {
+  readonly dialogRef = inject(MatDialogRef<EditUnitDialog>);
+
+  unitName = model('')
+  floorPlanFilename = model('')
+
+  readonly existingUnitId: string | undefined;
+  readonly unitPricing: UnitPricing[];
+
+  unit = output<BookableUnit>();
+  deleteUnit = output<void>();
+
+  floorPlanFilenames = inject(DataService).floorPlanFilenames;
+
+  constructor(@Inject(MAT_DIALOG_DATA) public data: EditUnitDialogData) {
+    this.unitPricing = data.unitPricing;
+    this.unitName.set(data.unitName);
+    this.floorPlanFilename.set(data.floorPlanFilename || "");
+    this.existingUnitId = data.existingUnitId;
+  }
+
+  @HostListener('window:keyup.Enter', ['$event'])
+  onKeyPress(_event: KeyboardEvent): void {
+    if (this.isValid()) {
+      this.onSubmit();
+    }
+  }
+
+  isValid(): boolean {
+    return this.unitName().length > 0;
+  }
+
+  onSubmit(): void {
+    this.unit.emit({
+      id: this.existingUnitId || '',
+      name: this.unitName(),
+      floorPlanFilename: this.floorPlanFilename(),
+    });
+  }
+
+  onDelete(): void {
+    if (confirm("Really delete? This cannot be undone")) {
+      this.deleteUnit.emit();
+    }
+  }
+}

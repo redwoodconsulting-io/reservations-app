@@ -14,11 +14,14 @@ import {MatDialog} from '@angular/material/dialog';
 import {provideLuxonDateAdapter} from '@angular/material-luxon-adapter';
 import {TodayService} from './utility/today-service';
 import {ReservationRoundsService} from './reservations/reservation-rounds-service';
+import {connectStorageEmulator, getStorage, provideStorage} from '@angular/fire/storage';
 
 export const ANIMATION_SETTINGS = {
   enterAnimationDuration: "250ms",
   exitAnimationDuration: "250ms",
 }
+
+export const FLOOR_PLANS_FOLDER = 'floorPlans';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -45,6 +48,13 @@ export const appConfig: ApplicationConfig = {
         connectFirestoreEmulator(firestore, 'localhost', 8080)
       }
       return firestore;
+    }),
+    provideStorage(() => {
+      const storage = getStorage();
+      if (environment.useEmulators) {
+        connectStorageEmulator(storage, 'localhost', 9199);
+      }
+      return storage;
     }),
     provideAnimationsAsync(),
     {provide: MatDialog, useClass: DialogService},

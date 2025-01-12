@@ -1,4 +1,4 @@
-import {inject, Injectable, signal, Signal} from '@angular/core';
+import {inject, Injectable, signal, Signal, WritableSignal} from '@angular/core';
 import {BehaviorSubject, catchError, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {
   BookableUnit,
@@ -29,12 +29,15 @@ import {
 import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {authState} from './auth/auth.component';
+import {deleteObject, listAll, ref, Storage, StorageReference, uploadBytes} from '@angular/fire/storage';
+import {FLOOR_PLANS_FOLDER} from './app.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
   private readonly firestore: Firestore;
+  private readonly storage = inject(Storage);
   private readonly auth = inject(Auth);
 
   bookers: Signal<Booker[]>;
@@ -47,6 +50,8 @@ export class DataService {
   units: Signal<BookableUnit[]>;
   readonly unitPricing$: BehaviorSubject<UnitPricingMap>;
   weeks$: BehaviorSubject<ReservableWeek[]>;
+
+  readonly floorPlanFilenames: Signal<string[]>;
 
   private readonly reservationsCollection;
 
@@ -192,9 +197,9 @@ export class DataService {
     const bookableUnitsCollection = collection(firestore, 'units').withConverter<BookableUnit>({
       // We need this to add in the id field.
       fromFirestore: snapshot => {
-        const {name} = snapshot.data();
+        const {name, floorPlanFilename} = snapshot.data();
         const {id} = snapshot;
-        return {id, name};
+        return {id, name, floorPlanFilename: floorPlanFilename};
       },
       toFirestore: (it: any) => it,
     });
@@ -205,6 +210,18 @@ export class DataService {
     this.reservationWeekCounts$ = this.reservations$.pipe(
       map(this.reservationsToMap)
     );
+
+    this.floorPlanFilenames = signal<string[]>([])
+    this.refreshFloorPlans()
+  }
+
+  updateUnit(unit: BookableUnit) {
+    if (!unit.id) {
+      throw new Error('Unit ID must be set.');
+    }
+    const unitsCollection = collection(this.firestore, 'units');
+    const existingRef = doc(unitsCollection, unit.id);
+    return updateDoc(existingRef, {...unit});
   }
 
   addReservation(reservation: Reservation) {
@@ -251,5 +268,24 @@ export class DataService {
       acc[key].push(unitPricing);
       return acc;
     }, {} as UnitPricingMap);
+  }
+
+  async deleteFloorPlan(storageRef: StorageReference) {
+    await deleteObject(storageRef);
+    this.refreshFloorPlans();
+  }
+
+  async uploadFloorPlan(storageRef: StorageReference, file: File) {
+    await uploadBytes(storageRef, file);
+    this.refreshFloorPlans();
+  }
+
+  private refreshFloorPlans() {
+    const floorPlansRoot = ref(this.storage, FLOOR_PLANS_FOLDER);
+    listAll(floorPlansRoot).then(listResult => {
+      const items = listResult.items.map(it => it.name);
+      (this.floorPlanFilenames as WritableSignal<string[]>).set(items)
+    });
+
   }
 }

@@ -1,0 +1,23 @@
+<main class="admin">
+  <h1>{{ title }}</h1>
+
+  <div>
+    <button mat-button class="secondary-button" routerLink="/">Back to main app</button>
+  </div>
+
+  <app-auth/>
+
+  <main>
+    @if (!activeChild()) {
+      Select an admin section:
+    }
+    <p>
+      <mat-button-toggle-group name="adminSection" aria-label="Admin sections" [(ngModel)]="activeChild">
+        <mat-button-toggle value="floor-plans" routerLink="floor-plans">Floor plans</mat-button-toggle>
+      </mat-button-toggle-group>
+    </p>
+
+    <router-outlet/>
+  </main>
+</main>
+

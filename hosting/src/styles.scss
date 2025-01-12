@@ -66,3 +66,12 @@ body {
   @include mat.button-density(-10);
   @include mat.icon-button-density(-10);
 }
+
+main {
+  justify-content: center;
+  align-items: center;
+  margin-left: 10%;
+  margin-right: 10%;
+
+  padding-bottom: 48px;
+}
