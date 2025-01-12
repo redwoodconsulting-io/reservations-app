@@ -7,9 +7,9 @@
       @for (floorPlanFilename of floorPlanFilenames(); track floorPlanFilename) {
         <mat-list-item>
           <div class="mat-button-small" style="float: right">
-              <a mat-icon-button href="{{floorPlanDownloadUrls()[floorPlanFilename] | async}}">
-                <mat-icon>visibility</mat-icon>
-              </a>
+            <a mat-icon-button href="{{floorPlanDownloadUrls()[floorPlanFilename] | async}}">
+              <mat-icon>visibility</mat-icon>
+            </a>
             <button mat-icon-button aria-label="Delete" (click)="alert('hi')">
               <mat-icon>delete</mat-icon>
             </button>
@@ -21,5 +21,12 @@
         </mat-list-item>
       }
     </mat-list>
+    <div (click)="uploadFile.click()">
+      <button mat-fab extended class="primary-button">
+        <mat-icon>upload</mat-icon>
+        Upload
+      </button>
+      <input #uploadFile (change)="upload($event)" onclick="this.value=null" type='file' style="display:none"/>
+    </div>
   </mat-card-content>
 </mat-card>

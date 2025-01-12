@@ -1,4 +1,4 @@
-import {inject, Injectable, signal, Signal} from '@angular/core';
+import {inject, Injectable, signal, Signal, WritableSignal} from '@angular/core';
 import {BehaviorSubject, catchError, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {
   BookableUnit,
@@ -29,13 +29,15 @@ import {
 import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {authState} from './auth/auth.component';
-import {listAll, ref, Storage} from '@angular/fire/storage';
+import {listAll, ref, Storage, StorageReference, uploadBytes} from '@angular/fire/storage';
+import {FLOOR_PLANS_FOLDER} from './app.config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataService {
   private readonly firestore: Firestore;
+  private readonly storage = inject(Storage);
   private readonly auth = inject(Auth);
 
   bookers: Signal<Booker[]>;
@@ -57,7 +59,7 @@ export class DataService {
   // FIXME: query for years present in weeks collection
   availableYears = signal([2025, 2026, 2027]);
 
-  constructor(firestore: Firestore, auth: Auth, storage: Storage) {
+  constructor(firestore: Firestore, auth: Auth) {
     this.firestore = firestore;
 
     this.permissions$ = collectionData(
@@ -209,13 +211,8 @@ export class DataService {
       map(this.reservationsToMap)
     );
 
-    const floorPlanFilenamesSignal = signal<string[]>([])
-    this.floorPlanFilenames = floorPlanFilenamesSignal
-    const floorPlansRoot = ref(storage, 'floorPlans');
-    listAll(floorPlansRoot).then(listResult => {
-      const items = listResult.items.map(it => it.name);
-      floorPlanFilenamesSignal.set(items);
-    });
+    this.floorPlanFilenames = signal<string[]>([])
+    this.refreshFloorPlans()
   }
 
   updateUnit(unit: BookableUnit) {
@@ -271,5 +268,19 @@ export class DataService {
       acc[key].push(unitPricing);
       return acc;
     }, {} as UnitPricingMap);
+  }
+
+  async uploadFloorPlan(storageRef: StorageReference, file: File) {
+    await uploadBytes(storageRef, file);
+    this.refreshFloorPlans();
+  }
+
+  private refreshFloorPlans() {
+    const floorPlansRoot = ref(this.storage, FLOOR_PLANS_FOLDER);
+    listAll(floorPlansRoot).then(listResult => {
+      const items = listResult.items.map(it => it.name);
+      (this.floorPlanFilenames as WritableSignal<string[]>).set(items)
+    });
+
   }
 }
