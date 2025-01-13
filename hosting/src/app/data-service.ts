@@ -18,6 +18,7 @@ import {
   addDoc,
   collection,
   collectionData,
+  collectionSnapshots,
   deleteDoc,
   doc,
   Firestore,
@@ -259,6 +260,29 @@ export class DataService {
     } else {
       return addDoc(reservationRoundsCollection, config);
     }
+  }
+
+  updateAnnualDocumentFilename(year: number, filename: string) {
+    const weeksCollection = collection(this.firestore, 'weeks');
+    const weeksQuery = query(weeksCollection, where('year', '==', year), limit(1));
+
+    return new Promise((resolve, reject) => {
+      const subscription = collectionSnapshots(weeksQuery).subscribe((snapshots) => {
+        subscription.unsubscribe();
+
+        if (snapshots.length === 0) {
+          console.error(`Annual config not found for year ${year}`)
+          return;
+        }
+
+        const doc = snapshots[0];
+        updateDoc(doc.ref, {annualDocumentFilename: filename}).then(() => {
+          resolve(true);
+        }).catch((error) => {
+          reject(error);
+        });
+      });
+    });
   }
 
   addReservation(reservation: Reservation) {

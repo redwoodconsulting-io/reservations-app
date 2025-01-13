@@ -15,11 +15,18 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    @if (annualDocumentFilename()) {
+    @if (annualDocumentFilename() || isAdmin()) {
       <p>
-        <a href="{{annualDocumentDownloadUrl() | async}}" target="_blank">
-          Annual rules & information
-        </a>
+        @if (annualDocumentFilename()) {
+          <a href="{{annualDocumentDownloadUrl() | async}}" target="_blank">Annual rules & information</a>
+        } @else {
+          No annual document
+        }
+        @if (isAdmin()) {
+          <button mat-icon-button class="secondary-button" (click)="editAnnualDocument()">
+            <mat-icon>edit</mat-icon>
+          </button>
+        }
       </p>
     }
     <mat-chip-set>

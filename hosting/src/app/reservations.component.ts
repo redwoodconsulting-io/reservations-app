@@ -28,11 +28,16 @@ import {MatFormField, MatOption, MatSelect} from '@angular/material/select';
 import {FormsModule} from '@angular/forms';
 import {MatLabel} from '@angular/material/form-field';
 import {AuditLogComponent} from './reservations/audit-log.component';
-import {MatButton} from '@angular/material/button';
+import {MatButton, MatIconButton} from '@angular/material/button';
 import {RouterLink} from '@angular/router';
 import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
 import {getDownloadURL, ref, Storage} from '@angular/fire/storage';
-import {ANNUAL_DOCUMENTS_FOLDER} from './app.config';
+import {ANIMATION_SETTINGS, ANNUAL_DOCUMENTS_FOLDER} from './app.config';
+import {MatIcon} from '@angular/material/icon';
+import {ErrorDialog} from './utility/error-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {EditAnnualDocumentDialog} from './admin/edit-annual-document-dialog.component';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 
 @Component({
@@ -60,6 +65,8 @@ import {ANNUAL_DOCUMENTS_FOLDER} from './app.config';
     MatCardContent,
     MatCardHeader,
     MatCard,
+    MatIcon,
+    MatIconButton,
   ],
   templateUrl: './reservations.component.html',
   styleUrl: './reservations.component.css',
@@ -67,6 +74,8 @@ import {ANNUAL_DOCUMENTS_FOLDER} from './app.config';
 export class ReservationsComponent implements OnDestroy {
   private readonly auth = inject(Auth);
   protected readonly dataService;
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly storage = inject(Storage);
   protected readonly reservationRoundsService = inject(ReservationRoundsService);
   private readonly todayService = inject(TodayService);
@@ -156,5 +165,23 @@ export class ReservationsComponent implements OnDestroy {
 
   bookerName(bookerId: string): string {
     return this.bookers().find(booker => booker.id === bookerId)?.name || '';
+  }
+
+  editAnnualDocument() {
+    const dialogRef = this.dialog.open(EditAnnualDocumentDialog, {
+      data: {
+        annualDocumentFilename: this.annualDocumentFilename(),
+      },
+      ...ANIMATION_SETTINGS,
+    });
+    dialogRef.componentInstance.outputFilename.subscribe((filename: string) => {
+      this.dataService.updateAnnualDocumentFilename(this.currentYear(), filename).then(() => {
+        this.snackBar.open('Document updated', 'Ok', {
+          duration: 3000
+        });
+      }).catch(error => {
+        this.dialog.open(ErrorDialog, {data: `Couldn't update unit: ${error.message}`, ...ANIMATION_SETTINGS});
+      });
+    });
   }
 }
