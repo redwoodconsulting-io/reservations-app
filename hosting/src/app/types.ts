@@ -56,7 +56,6 @@ export interface ReservationAuditLog {
 }
 
 export interface ReservationRound {
-  position: number;
   name: string;
   startDate: DateTime;
   endDate: DateTime;
@@ -66,7 +65,6 @@ export interface ReservationRound {
 }
 
 export interface ReservationRoundDefinition {
-  position: number;
   name: string;
   durationWeeks?: number;
   subRoundBookerIds?: string[];

@@ -67,19 +67,18 @@ export class ReservationRoundsService implements OnDestroy {
     return roundsConfig.rounds.map(round => {
       const roundStart = previousEndDate;
       if (round.durationWeeks && round.subRoundBookerIds?.length) {
-        throw new Error(`Round #${round.position} "${round.name}" cannot have both durationWeeks and bookerOrder`);
+        throw new Error(`Round "${round.name}" cannot have both durationWeeks and bookerOrder`);
       }
 
       const durationWeeks = round.durationWeeks || round.subRoundBookerIds?.length;
       if (!durationWeeks || durationWeeks < 1) {
-        throw new Error(`Round #${round.position} "${round.name}" must have durationWeeks or bookerOrder`);
+        throw new Error(`Round "${round.name}" must have durationWeeks or bookerOrder`);
       }
 
       const roundEnd = roundStart.plus({days: durationWeeks * 7 - 1});
       previousEndDate = roundEnd.plus({days: 1});
       return {
         name: round.name,
-        position: round.position,
         startDate: roundStart,
         endDate: roundEnd,
         subRoundBookerIds: round.subRoundBookerIds || [],
