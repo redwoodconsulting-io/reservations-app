@@ -30,7 +30,7 @@ import {Auth} from '@angular/fire/auth';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {authState} from './auth/auth.component';
 import {deleteObject, listAll, ref, Storage, StorageReference, uploadBytes} from '@angular/fire/storage';
-import {FLOOR_PLANS_FOLDER} from './app.config';
+import {ANNUAL_DOCUMENTS_FOLDER, FLOOR_PLANS_FOLDER} from './app.config';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +40,7 @@ export class DataService {
   private readonly storage = inject(Storage);
   private readonly auth = inject(Auth);
 
+  annualDocumentFilename: WritableSignal<string>;
   bookers: Signal<Booker[]>;
   permissions$: Observable<Permissions>;
   pricingTiers$: Observable<PricingTierMap>;
@@ -52,6 +53,7 @@ export class DataService {
   weeks$: BehaviorSubject<ReservableWeek[]>;
 
   readonly floorPlanFilenames: Signal<string[]>;
+  readonly annualDocumentFilenames: Signal<string[]>;
 
   private readonly reservationsCollection;
 
@@ -129,6 +131,7 @@ export class DataService {
     this.reservations$ = new BehaviorSubject([] as Reservation[]);
     this.reservationsAuditLog$ = new BehaviorSubject([] as ReservationAuditLog[]);
     this.unitPricing$ = new BehaviorSubject({} as UnitPricingMap);
+    this.annualDocumentFilename = signal('');
     this.weeks$ = new BehaviorSubject([] as ReservableWeek[]);
 
     let reservationRoundsConfigSubscription: Subscription;
@@ -190,9 +193,11 @@ export class DataService {
       weeksSubscription = collectionData(weeksQuery).subscribe((it) => {
         if (it.length === 0) {
           this.weeks$.next([] as ReservableWeek[]);
+          this.annualDocumentFilename.set('');
         } else {
           const configData = it[0] as ConfigData;
           this.weeks$.next(configData.weeks as ReservableWeek[]);
+          this.annualDocumentFilename.set(configData.annualDocumentFilename);
         }
       });
     });
@@ -231,6 +236,9 @@ export class DataService {
 
     this.floorPlanFilenames = signal<string[]>([])
     this.refreshFloorPlans()
+
+    this.annualDocumentFilenames = signal<string[]>([])
+    this.refreshAnnualDocuments()
   }
 
   updateUnit(unit: BookableUnit) {
@@ -324,12 +332,19 @@ export class DataService {
     this.refreshFloorPlans();
   }
 
+  private refreshAnnualDocuments() {
+    const annualDocumentsRoot = ref(this.storage, ANNUAL_DOCUMENTS_FOLDER);
+    listAll(annualDocumentsRoot).then(listResult => {
+      const items = listResult.items.map(it => it.name);
+      (this.annualDocumentFilenames as WritableSignal<string[]>).set(items)
+    });
+  }
+
   private refreshFloorPlans() {
     const floorPlansRoot = ref(this.storage, FLOOR_PLANS_FOLDER);
     listAll(floorPlansRoot).then(listResult => {
       const items = listResult.items.map(it => it.name);
       (this.floorPlanFilenames as WritableSignal<string[]>).set(items)
     });
-
   }
 }

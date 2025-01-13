@@ -21,6 +21,7 @@ export const ANIMATION_SETTINGS = {
   exitAnimationDuration: "250ms",
 }
 
+export const ANNUAL_DOCUMENTS_FOLDER = 'annualDocuments';
 export const FLOOR_PLANS_FOLDER = 'floorPlans';
 
 export const appConfig: ApplicationConfig = {

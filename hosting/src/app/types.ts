@@ -15,6 +15,7 @@ export interface Booker {
 }
 
 export interface ConfigData {
+  annualDocumentFilename: string;
   year: number;
   weeks: ReservableWeek[];
 }

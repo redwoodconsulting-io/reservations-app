@@ -15,6 +15,13 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+    @if (annualDocumentFilename()) {
+      <p>
+        <a href="{{annualDocumentDownloadUrl() | async}}" target="_blank">
+          Annual rules & information
+        </a>
+      </p>
+    }
     <mat-chip-set>
       <mat-chip>
         Year: {{ currentYear() }}

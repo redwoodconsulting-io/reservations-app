@@ -1,8 +1,8 @@
-import {Component, inject, model, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
+import {Component, computed, inject, model, OnDestroy, signal, Signal, WritableSignal} from '@angular/core';
 import {AsyncPipe, KeyValuePipe, NgForOf} from '@angular/common';
 import {AuthComponent, authState} from './auth/auth.component';
 import {Auth, User} from '@angular/fire/auth';
-import {catchError, combineLatest, map, Observable} from 'rxjs';
+import {catchError, combineLatest, from, map, Observable} from 'rxjs';
 import {WeekTableComponent} from './week-table.component';
 import {
   BookableUnit,
@@ -31,6 +31,8 @@ import {AuditLogComponent} from './reservations/audit-log.component';
 import {MatButton} from '@angular/material/button';
 import {RouterLink} from '@angular/router';
 import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
+import {getDownloadURL, ref, Storage} from '@angular/fire/storage';
+import {ANNUAL_DOCUMENTS_FOLDER} from './app.config';
 
 
 @Component({
@@ -65,6 +67,7 @@ import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
 export class ReservationsComponent implements OnDestroy {
   private readonly auth = inject(Auth);
   protected readonly dataService;
+  private readonly storage = inject(Storage);
   protected readonly reservationRoundsService = inject(ReservationRoundsService);
   private readonly todayService = inject(TodayService);
   user$ = authState(this.auth);
@@ -76,6 +79,8 @@ export class ReservationsComponent implements OnDestroy {
 
   title = 'Reservations-App';
 
+  annualDocumentFilename: Signal<string>;
+  annualDocumentDownloadUrl: Signal<Observable<string>>;
   bookers: Signal<Booker[]>;
   currentBooker: WritableSignal<Booker | undefined> = signal(undefined);
   weeks$: Observable<ReservableWeek[]>;
@@ -95,6 +100,7 @@ export class ReservationsComponent implements OnDestroy {
 
   constructor(dataService: DataService, reservationRoundsService: ReservationRoundsService) {
     this.dataService = dataService;
+    this.annualDocumentFilename = dataService.annualDocumentFilename;
     this.bookers = dataService.bookers;
     this.permissions$ = dataService.permissions$;
     this.pricingTiers$ = dataService.pricingTiers$;
@@ -104,6 +110,11 @@ export class ReservationsComponent implements OnDestroy {
     this.unitPricing$ = dataService.unitPricing$;
     this.units = dataService.units;
     this.weeks$ = dataService.weeks$;
+
+    this.annualDocumentDownloadUrl = computed(() => {
+      const rootRef = ref(this.storage, ANNUAL_DOCUMENTS_FOLDER);
+      return from(getDownloadURL(ref(rootRef, this.annualDocumentFilename())))
+    });
 
     this.currentYear.subscribe(year => {
       this.dataService.activeYear.next(year);
