@@ -41,7 +41,19 @@
       [reservations]="(reservations$ | async) || []"
       [unitPricing]="(unitPricing$ | async) || {}"
     />
-    <round-config [rounds$]="reservationRounds$" [bookers]="bookers"/>
+    <mat-card>
+      <mat-card-header>
+        <h1>Reservation Rounds</h1>
+      </mat-card-header>
+      <mat-card-content>
+        <round-config [rounds$]="reservationRounds$" [bookers]="bookers"/>
+        @if (isAdmin()) {
+          <button mat-button class="secondary-button" routerLink="/admin/reservation-rounds">
+            Manage rounds
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
     <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers" [units]="units"/>
   } @else {
     <p>

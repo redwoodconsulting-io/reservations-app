@@ -13,8 +13,15 @@
     }
     <p>
       <mat-button-toggle-group name="adminSection" aria-label="Admin sections" [(ngModel)]="activeChild">
-        <mat-button-toggle value="floor-plans" routerLink="floor-plans">Floor plans</mat-button-toggle>
-        <mat-button-toggle value="unit-pricing" routerLink="unit-pricing">Unit pricing</mat-button-toggle>
+        <mat-button-toggle value="floor-plans" routerLink="floor-plans">
+          Floor plans
+        </mat-button-toggle>
+        <mat-button-toggle value="reservation-rounds" routerLink="reservation-rounds">
+          Reservation rounds
+        </mat-button-toggle>
+        <mat-button-toggle value="unit-pricing" routerLink="unit-pricing">
+          Unit pricing
+        </mat-button-toggle>
       </mat-button-toggle-group>
     </p>
 

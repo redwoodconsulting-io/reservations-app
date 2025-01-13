@@ -28,6 +28,9 @@ import {MatFormField, MatOption, MatSelect} from '@angular/material/select';
 import {FormsModule} from '@angular/forms';
 import {MatLabel} from '@angular/material/form-field';
 import {AuditLogComponent} from './reservations/audit-log.component';
+import {MatButton} from '@angular/material/button';
+import {RouterLink} from '@angular/router';
+import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
 
 
 @Component({
@@ -50,8 +53,14 @@ import {AuditLogComponent} from './reservations/audit-log.component';
     FormsModule,
     MatLabel,
     AuditLogComponent,
+    MatButton,
+    RouterLink,
+    MatCardContent,
+    MatCardHeader,
+    MatCard,
   ],
   templateUrl: './reservations.component.html',
+  styleUrl: './reservations.component.css',
 })
 export class ReservationsComponent implements OnDestroy {
   private readonly auth = inject(Auth);
