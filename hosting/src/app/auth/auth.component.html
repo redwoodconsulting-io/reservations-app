@@ -1,6 +1,6 @@
 <div class="auth">
   @if ((user | async) === null) {
-    <button (click)="login()">Log in</button>
+    <button mat-button (click)="login()">Log in</button>
     @if (loginErrorMessage$ | async) {
       <p matError>
         Login error: {{ loginErrorMessage$ | async }}
@@ -9,7 +9,9 @@
   } @else {
     <p>
       Logged in as {{ (user | async)?.email }}
-      <button (click)="logout()">Log out</button>
+      <button mat-icon-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
     </p>
   }
 </div>

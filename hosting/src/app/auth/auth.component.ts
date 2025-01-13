@@ -10,6 +10,8 @@ import {LoginDialog} from './login-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import {MatError} from '@angular/material/form-field';
 import {ANIMATION_SETTINGS} from '../app.config';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 
 // TODO bring this to RxFire
 function _authState(auth: Auth): Observable<User | null> {
@@ -32,7 +34,7 @@ export const authState = ɵzoneWrap(_authState, true);
   selector: 'app-auth',
   templateUrl: 'auth.component.html',
   standalone: true,
-  imports: [AsyncPipe, LoginDialog, MatError]
+  imports: [AsyncPipe, MatError, MatIcon, MatIconButton, MatButton]
 })
 export class AuthComponent implements OnDestroy {
 
