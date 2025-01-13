@@ -96,11 +96,30 @@ export class ReservationRoundsComponent implements OnDestroy {
     });
   }
 
+  addRound() {
+    const dialogRef = this.dialog.open(EditRoundDialog, {
+      data: {
+        name: `Round ${this.reservationRoundsDefinitions().length + 1}`,
+        durationWeeks: 0,
+        subRoundBookerIds: undefined,
+        bookedWeeksLimit: 0,
+        allowDailyReservations: false,
+        bookers: this.bookers(),
+      },
+      ...ANIMATION_SETTINGS,
+    });
+    dialogRef.componentInstance.round.subscribe((round: ReservationRoundDefinition) => {
+      const newConfig = {...this.reservationRoundsConfig()};
+      newConfig.rounds.push(round);
+      this.reservationRoundsConfig.set(newConfig);
+      dialogRef.close();
+    });
+  }
+
   editRound(index: number) {
     const round = this.reservationRoundsDefinitions()[index];
 
     const dialogRef = this.dialog.open(EditRoundDialog, {
-      minWidth: '40vw',
       data: {
         name: round.name,
         durationWeeks: round.durationWeeks,
@@ -113,7 +132,6 @@ export class ReservationRoundsComponent implements OnDestroy {
       ...ANIMATION_SETTINGS,
     });
     dialogRef.componentInstance.round.subscribe((round: ReservationRoundDefinition) => {
-      console.log(`New round: ${JSON.stringify(round)}`);
       const newConfig = {...this.reservationRoundsConfig()};
       newConfig.rounds[index] = round;
       this.reservationRoundsConfig.set(newConfig);
@@ -121,7 +139,10 @@ export class ReservationRoundsComponent implements OnDestroy {
     });
 
     dialogRef.componentInstance.deleteRound.subscribe(() => {
-      console.log('Delete round');
+      const newConfig = {...this.reservationRoundsConfig()};
+      newConfig.rounds.splice(index, 1);
+      this.reservationRoundsConfig.set(newConfig);
+      dialogRef.close();
     });
   }
 
