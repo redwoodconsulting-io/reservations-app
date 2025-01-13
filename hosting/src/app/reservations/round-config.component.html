@@ -10,7 +10,7 @@
             {{ bookerFor(bookerId)?.name || 'unknown' }}
           </li>
         }
-        @if (round.bookedWeeksLimit > 0 ) {
+        @if (round.bookedWeeksLimit > 0) {
           <li>
             Booking limit: {{ round.bookedWeeksLimit }} weeks
           </li>

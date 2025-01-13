@@ -319,7 +319,7 @@ export class WeekTableComponent {
 
     return new Set(otherReservations.flatMap(otherReservation => {
       const days = otherReservation.endDate.diff(otherReservation.startDate, 'days').days;
-      return [...Array(days).keys()].map(offset => otherReservation.startDate.plus({days: offset}).toISO());
+      return [...Array(days).keys()].map(offset => otherReservation.startDate.plus({days: offset}).toISODate());
     }));
 
   }

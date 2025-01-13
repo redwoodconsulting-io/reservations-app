@@ -1,0 +1,85 @@
+<h2 mat-dialog-title>
+  @if (data.existingPosition) {
+    Modify round
+  } @else {
+    Create round
+  }
+</h2>
+<mat-dialog-content>
+  <div>
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput [(ngModel)]="name" required/>
+      <mat-error>Name is required</mat-error>
+    </mat-form-field>
+  </div>
+  <p>Allow daily reservations:</p>
+  <div>
+    <mat-button-toggle-group
+      [(ngModel)]="allowDailyReservations"
+      aria-label="Allow daily reservations"
+    >
+      <mat-button-toggle [value]="false">Weekly only</mat-button-toggle>
+      <mat-button-toggle [value]="true">Daily possible</mat-button-toggle>
+    </mat-button-toggle-group>
+    <div>&nbsp;</div>
+  </div>
+  <p>Round duration:</p>
+  <div>
+    <mat-button-toggle-group
+      [(ngModel)]="isRoundRobin"
+      aria-label="Is round robin"
+    >
+      <mat-button-toggle [value]="true">Priority rounds</mat-button-toggle>
+      <mat-button-toggle [value]="false">Duration</mat-button-toggle>
+    </mat-button-toggle-group>
+    <div>&nbsp;</div>
+  </div>
+  @if (isRoundRobin()) {
+    @let numBookers = subRoundBookerIds()?.length || 0;
+    <div>
+      <p>Priority round order:</p>
+      <mat-list>
+        @for (bookerId of subRoundBookerIds(); track bookerId) {
+          <mat-list-item>
+            <button mat-icon-button (click)="moveUp($index)" [disabled]="$index === 0">
+              <mat-icon>arrow_drop_up</mat-icon>
+            </button>
+            <button mat-icon-button (click)="moveDown($index)" [disabled]="$index === numBookers - 1">
+              <mat-icon>arrow_drop_down</mat-icon>
+            </button>
+            <span>{{ bookerName(bookerId) }}</span>
+          </mat-list-item>
+        }
+      </mat-list>
+    </div>
+  } @else {
+    <div>
+      <mat-form-field>
+        <mat-label>Duration (weeks)</mat-label>
+        <input matInput type="number" [(ngModel)]="durationWeeks" min="1"/>
+        <mat-error>Duration must be at least one</mat-error>
+      </mat-form-field>
+    </div>
+  }
+  <div>
+    <mat-form-field>
+      <mat-label>Booking limit (weeks)</mat-label>
+      <input matInput type="number" [(ngModel)]="bookingLimitWeeks" min="0"/>
+      <mat-hint>Zero or blank for none</mat-hint>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  @if (data.existingPosition !== undefined) {
+    <button mat-button class="error-button" (click)="onDelete()">Delete</button>
+  }
+  <button mat-button class="secondary-button" [mat-dialog-close]="null">Cancel</button>
+  <button mat-button class="primary-button" (click)="onSubmit()" [disabled]="!isValid()">
+    @if (data.existingPosition) {
+      Modify
+    } @else {
+      Save
+    }
+  </button>
+</mat-dialog-actions>

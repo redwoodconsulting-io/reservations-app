@@ -152,7 +152,7 @@ export class ReserveDialog {
     const _this = this;
 
     return (date: DateTime | null) => {
-      return !!date && !_this.blockedDates.has(date.toISO()!);
+      return !!date && !_this.blockedDates.has(date.toISODate()!);
     }
   }
 

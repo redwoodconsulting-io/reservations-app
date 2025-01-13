@@ -1,0 +1,41 @@
+@if (reservationRoundsConfig()) {
+  <mat-card>
+    <mat-card-header>
+      <h1>Reservation rounds for {{ year() }}</h1>
+    </mat-card-header>
+    <mat-card-content>
+      <h2>Configuration</h2>
+      <mat-form-field>
+        <mat-label>Start date</mat-label>
+        <input matInput
+               [min]="yearStart"
+               [max]="yearEnd"
+               [matDatepicker]="startPicker"
+               [(ngModel)]="roundsStartDate"/>
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+        <mat-error>Invalid date</mat-error>
+      </mat-form-field>
+
+      <ul>
+        @for (roundDef of reservationRoundsDefinitions(); track $index) {
+          <li>
+            Round {{ $index + 1 }}: {{ roundDef.name }}
+            <button mat-button class="secondary-button" (click)="editRound($index)">Edit</button>
+          </li>
+        }
+        <li>
+          <button mat-button class="secondary-button" (click)="addRound()">Add round</button>
+        </li>
+      </ul>
+
+      <h2>Preview</h2>
+      <round-config [rounds$]="rounds()" [bookers]="bookers"/>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button class="primary-button" (click)="onSubmit()" [disabled]="false">Update</button>
+    </mat-card-actions>
+  </mat-card>
+} @else {
+  Loading…
+}
