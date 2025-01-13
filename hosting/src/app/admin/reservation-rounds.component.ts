@@ -91,7 +91,7 @@ export class ReservationRoundsComponent implements OnDestroy {
 
     this.roundsSubscription = this.roundsStartDate.subscribe(date => {
       const newConfig = {...this.reservationRoundsConfig()}
-      newConfig.startDate = date.toISO()!;
+      newConfig.startDate = date.toISODate()!;
       this.reservationRoundsConfig.set(newConfig);
     });
   }
