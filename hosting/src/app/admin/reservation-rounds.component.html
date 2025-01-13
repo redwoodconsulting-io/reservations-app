@@ -21,7 +21,7 @@
         @for (roundDef of reservationRoundsDefinitions(); track roundDef) {
           <li>
             Round {{ $index + 1 }}: {{ roundDef.name }}
-            <button mat-button class="secondary-button" (click)="$index">Edit</button>
+            <button mat-button class="secondary-button" (click)="editRound($index)">Edit</button>
           </li>
         }
       </ul>

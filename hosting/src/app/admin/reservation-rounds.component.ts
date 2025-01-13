@@ -14,7 +14,7 @@ import {MatCard, MatCardActions, MatCardContent, MatCardHeader} from '@angular/m
 import {of} from 'rxjs';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from "@angular/material/dialog";
-import {ReservationRound, ReservationRoundsConfig} from '../types';
+import {ReservationRound, ReservationRoundDefinition, ReservationRoundsConfig} from '../types';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {ActivatedRoute} from '@angular/router';
 import {MatError, MatFormField, MatLabel, MatSuffix} from '@angular/material/form-field';
@@ -25,6 +25,8 @@ import {ReservationRoundsService} from '../reservations/reservation-rounds-servi
 import {MatDatepicker, MatDatepickerInput, MatDatepickerToggle} from '@angular/material/datepicker';
 import {DateTime} from 'luxon';
 import {RoundConfigComponent} from '../reservations/round-config.component';
+import {ANIMATION_SETTINGS} from '../app.config';
+import {EditRoundDialog} from './edit-round-dialog.component';
 
 @Component({
   selector: 'reservation-rounds-admin',
@@ -91,6 +93,35 @@ export class ReservationRoundsComponent implements OnDestroy {
       const newConfig = {...this.reservationRoundsConfig()}
       newConfig.startDate = date.toISO()!;
       this.reservationRoundsConfig.set(newConfig);
+    });
+  }
+
+  editRound(index: number) {
+    const round = this.reservationRoundsDefinitions()[index];
+
+    const dialogRef = this.dialog.open(EditRoundDialog, {
+      minWidth: '40vw',
+      data: {
+        name: round.name,
+        durationWeeks: round.durationWeeks,
+        subRoundBookerIds: round.subRoundBookerIds,
+        bookedWeeksLimit: round.bookedWeeksLimit,
+        allowDailyReservations: round.allowDailyReservations || false,
+        bookers: this.bookers(),
+        existingPosition: index,
+      },
+      ...ANIMATION_SETTINGS,
+    });
+    dialogRef.componentInstance.round.subscribe((round: ReservationRoundDefinition) => {
+      console.log(`New round: ${JSON.stringify(round)}`);
+      const newConfig = {...this.reservationRoundsConfig()};
+      newConfig.rounds[index] = round;
+      this.reservationRoundsConfig.set(newConfig);
+      dialogRef.close();
+    });
+
+    dialogRef.componentInstance.deleteRound.subscribe(() => {
+      console.log('Delete round');
     });
   }
 
