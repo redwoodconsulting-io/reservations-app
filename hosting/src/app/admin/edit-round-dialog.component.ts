@@ -118,13 +118,21 @@ export class EditRoundDialog {
   }
 
   onSubmit(): void {
-    this.round.emit({
+    const round = {
       name: this.name(),
-      durationWeeks: this.durationWeeks(),
-      subRoundBookerIds: this.subRoundBookerIds(),
-      bookedWeeksLimit: this.bookingLimitWeeks(),
       allowDailyReservations: this.allowDailyReservations(),
-    });
+      bookedWeeksLimit: this.bookingLimitWeeks(),
+    } as ReservationRoundDefinition;
+
+    // Don't add undefined fields
+    if (this.subRoundBookerIds()) {
+      round.subRoundBookerIds = this.subRoundBookerIds();
+    }
+    if (this.durationWeeks()) {
+      round.durationWeeks = this.durationWeeks();
+    }
+
+    this.round.emit(round);
   }
 
   onDelete(): void {

@@ -73,6 +73,7 @@ export interface ReservationRoundDefinition {
 }
 
 export interface ReservationRoundsConfig {
+  id: string;
   year: number;
   startDate: string;
   rounds: ReservationRoundDefinition[];

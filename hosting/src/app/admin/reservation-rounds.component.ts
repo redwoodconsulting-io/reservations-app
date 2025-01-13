@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {DataService} from '../data-service';
 import {MatCard, MatCardActions, MatCardContent, MatCardHeader} from '@angular/material/card';
-import {of} from 'rxjs';
+import {of, Subscription} from 'rxjs';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from "@angular/material/dialog";
 import {ReservationRound, ReservationRoundDefinition, ReservationRoundsConfig} from '../types';
@@ -76,20 +76,22 @@ export class ReservationRoundsComponent implements OnDestroy {
   readonly yearStart = computed(() => DateTime.fromISO(`${this.year()}-01-01`));
   readonly yearEnd = computed(() => DateTime.fromISO(`${this.year()}-12-31`));
 
-  private roundsSubscription?: OutputRefSubscription;
+  private roundsSubscription?: Subscription;
+  private startDateSubscription?: OutputRefSubscription;
 
   ngOnDestroy() {
     this.roundsSubscription?.unsubscribe();
+    this.startDateSubscription?.unsubscribe();
   }
 
   constructor(private route: ActivatedRoute) {
     this.year = toSignal(this.dataService.activeYear, {initialValue: 0});
-    this.dataService.reservationRoundsConfig$.subscribe(config => {
+    this.roundsSubscription = this.dataService.reservationRoundsConfig$.subscribe(config => {
       this.reservationRoundsConfig.set(config);
       this.roundsStartDate.set(DateTime.fromISO(config.startDate));
     });
 
-    this.roundsSubscription = this.roundsStartDate.subscribe(date => {
+    this.startDateSubscription = this.roundsStartDate.subscribe(date => {
       const newConfig = {...this.reservationRoundsConfig()}
       newConfig.startDate = date.toISODate()!;
       this.reservationRoundsConfig.set(newConfig);
@@ -101,7 +103,6 @@ export class ReservationRoundsComponent implements OnDestroy {
       data: {
         name: `Round ${this.reservationRoundsDefinitions().length + 1}`,
         durationWeeks: 0,
-        subRoundBookerIds: undefined,
         bookedWeeksLimit: 0,
         allowDailyReservations: false,
         bookers: this.bookers(),
@@ -147,5 +148,7 @@ export class ReservationRoundsComponent implements OnDestroy {
   }
 
   onSubmit() {
+    this.dataService.updateReservationRoundsConfig(this.reservationRoundsConfig());
+    this.snackBar.open('Round rules saved', 'Ok', {duration: 3000});
   }
 }

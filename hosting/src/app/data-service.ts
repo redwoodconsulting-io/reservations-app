@@ -101,7 +101,15 @@ export class DataService {
       toFirestore: (it: any) => it,
     });
     const weeksCollection = collection(firestore, 'weeks');
-    const reservationRoundsCollection = collection(firestore, 'reservationRounds');
+    const reservationRoundsCollection = collection(firestore, 'reservationRounds').withConverter<ReservationRoundsConfig>({
+      // We need this to add in the id field.
+      fromFirestore: snapshot => {
+        const {rounds, startDate, year} = snapshot.data();
+        const {id} = snapshot;
+        return {id, rounds, startDate, year};
+      },
+      toFirestore: (it: any) => it,
+    });
     const reservationsAuditLogCollection = collection(firestore, 'reservationsAuditLog');
     this.reservationsCollection = collection(firestore, 'reservations').withConverter<Reservation>({
       fromFirestore: snapshot => {
@@ -113,6 +121,7 @@ export class DataService {
     });
 
     this.reservationRoundsConfig$ = new BehaviorSubject({
+      id: "",
       year: 1900,
       rounds: [],
       startDate: `1900-01-01`
@@ -147,6 +156,7 @@ export class DataService {
       reservationRoundsConfigSubscription = collectionData(reservationRoundsQuery).subscribe((it) => {
         if (it.length === 0) {
           this.reservationRoundsConfig$.next({
+            id: "",
             year: year,
             rounds: [],
             startDate: `${year}-01-01`
@@ -230,6 +240,17 @@ export class DataService {
     const unitsCollection = collection(this.firestore, 'units');
     const existingRef = doc(unitsCollection, unit.id);
     return updateDoc(existingRef, {...unit});
+  }
+
+  updateReservationRoundsConfig(config: ReservationRoundsConfig) {
+    const reservationRoundsCollection = collection(this.firestore, 'reservationRounds');
+
+    if (config.id) {
+      const existingRef = doc(reservationRoundsCollection, config.id);
+      return updateDoc(existingRef, {...config});
+    } else {
+      return addDoc(reservationRoundsCollection, config);
+    }
   }
 
   addReservation(reservation: Reservation) {

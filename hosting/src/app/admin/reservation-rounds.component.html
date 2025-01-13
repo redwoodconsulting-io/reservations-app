@@ -18,7 +18,7 @@
       </mat-form-field>
 
       <ul>
-        @for (roundDef of reservationRoundsDefinitions(); track roundDef) {
+        @for (roundDef of reservationRoundsDefinitions(); track $index) {
           <li>
             Round {{ $index + 1 }}: {{ roundDef.name }}
             <button mat-button class="secondary-button" (click)="editRound($index)">Edit</button>
