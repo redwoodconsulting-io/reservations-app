@@ -1,9 +1,11 @@
 import * as logger from "firebase-functions/logger";
 
 import {onDocumentWrittenWithAuthContext} from "firebase-functions/v2/firestore";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";
+import {getAuth} from "firebase-admin/auth";
 
 initializeApp();
 const db = getFirestore();
@@ -46,3 +48,27 @@ export const modifyDocument =
       });
     }
   );
+
+export const setUserPassword =
+  onCall(async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("failed-precondition", "Must be admin");
+    }
+    // Get the list of admins
+    const query = await db.collection("permissions").get();
+
+    if (query.docs.length === 0) {
+      throw new HttpsError("internal", "Permissions document not found");
+    }
+    const permissions = query.docs[0].data();
+
+    const adminIds = permissions.adminUserIds as string[];
+    if (!adminIds.includes(request.auth.uid)) {
+      throw new HttpsError("failed-precondition", "Must be admin");
+    }
+
+    const {userId, password} = request.data;
+
+    await getAuth().updateUser(userId, {password: password,})
+    return true;
+  });

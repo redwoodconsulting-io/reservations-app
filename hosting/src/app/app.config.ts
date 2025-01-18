@@ -15,6 +15,7 @@ import {provideLuxonDateAdapter} from '@angular/material-luxon-adapter';
 import {TodayService} from './utility/today-service';
 import {ReservationRoundsService} from './reservations/reservation-rounds-service';
 import {connectStorageEmulator, getStorage, provideStorage} from '@angular/fire/storage';
+import {connectFunctionsEmulator, getFunctions, provideFunctions} from '@angular/fire/functions';
 
 export const ANIMATION_SETTINGS = {
   enterAnimationDuration: "250ms",
@@ -49,6 +50,13 @@ export const appConfig: ApplicationConfig = {
         connectFirestoreEmulator(firestore, 'localhost', 8080)
       }
       return firestore;
+    }),
+    provideFunctions(() => {
+        const functions = getFunctions();
+        if (environment.useEmulators) {
+          connectFunctionsEmulator(functions, 'localhost', 5001);
+        }
+        return functions;
     }),
     provideStorage(() => {
       const storage = getStorage();

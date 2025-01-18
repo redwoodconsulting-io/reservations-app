@@ -4,6 +4,9 @@
   @if (isAdmin()) {
     <today-picker [today]="today()"></today-picker>
     <booker-picker (bookerId)="bookerIdOverride.set($event)" [bookers]="bookers"></booker-picker>
+    <button mat-button class="secondary-button" routerLink="/admin">
+      Admin panel
+    </button>
   }
   <app-auth/>
   @if (user$ | async) {
