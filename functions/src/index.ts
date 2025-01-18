@@ -43,14 +43,15 @@ export const modifyDocument =
         timestamp: new Date(),
       }).then(() => {
         logger.info("Reservation audit log created");
-      }).catch((error: any) => {
+      }).catch((error: Error) => {
         logger.error(`Error creating audit log: ${error}`);
       });
     }
   );
 
-export const setUserPassword =
-  onCall(async (request) => {
+export const setUserPassword = onCall(
+  async (request) => {
+    // Check if the user is an admin
     if (!request.auth) {
       throw new HttpsError("failed-precondition", "Must be admin");
     }
@@ -69,6 +70,7 @@ export const setUserPassword =
 
     const {userId, password} = request.data;
 
-    await getAuth().updateUser(userId, {password: password,})
+    await getAuth().updateUser(userId, {password: password});
     return true;
-  });
+  }
+);
