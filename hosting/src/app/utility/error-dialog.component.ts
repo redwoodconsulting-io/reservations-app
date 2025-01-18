@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, Inject, output,} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject,} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -6,7 +6,6 @@ import {
   MatDialogContent,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import {Reservation} from '../types';
 import {MatButton} from '@angular/material/button';
 
 @Component({
@@ -23,11 +22,6 @@ import {MatButton} from '@angular/material/button';
   ]
 })
 export class ErrorDialog {
-  //readonly dialogRef = inject(MatDialogRef<ErrorDialog>);
-
-  reservation = output<Reservation>();
-
   constructor(@Inject(MAT_DIALOG_DATA) public data: string) {
   }
-
 }
