@@ -71,7 +71,9 @@
         }
       </mat-card-content>
     </mat-card>
-    <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers" [units]="units"/>
+    @if (isAdmin()) {
+      <audit-log [reservationsAuditLog$]="reservationsAuditLog$" [bookers]="bookers" [units]="units"/>
+    }
   } @else {
     <p>
       Please log in
