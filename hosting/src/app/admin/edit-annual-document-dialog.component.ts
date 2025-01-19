@@ -16,6 +16,7 @@ import {MatLuxonDateModule} from '@angular/material-luxon-adapter';
 import {MatOption} from '@angular/material/core';
 import {MatSelect} from '@angular/material/select';
 import {DataService} from '../data-service';
+import {RouterLink} from '@angular/router';
 
 export interface EditAnnualDocumentDialogData {
   annualDocumentFilename: string;
@@ -40,6 +41,7 @@ export interface EditAnnualDocumentDialogData {
     MatInputModule,
     MatOption,
     MatSelect,
+    RouterLink,
 
   ]
 })

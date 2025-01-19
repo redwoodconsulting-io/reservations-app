@@ -13,6 +13,9 @@
     }
     <p>
       <mat-button-toggle-group name="adminSection" aria-label="Admin sections" [(ngModel)]="activeChild">
+        <mat-button-toggle value="annual-documents" routerLink="annual-documents">
+          Annual documents
+        </mat-button-toggle>
         <mat-button-toggle value="floor-plans" routerLink="floor-plans">
           Floor plans
         </mat-button-toggle>

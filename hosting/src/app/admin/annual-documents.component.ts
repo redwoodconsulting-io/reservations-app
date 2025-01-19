@@ -6,14 +6,14 @@ import {MatFabButton, MatIconAnchor, MatIconButton} from '@angular/material/butt
 import {MatCard, MatCardContent, MatCardHeader} from '@angular/material/card';
 import {from, Observable} from 'rxjs';
 import {getDownloadURL, ref, Storage} from '@angular/fire/storage';
-import {ANIMATION_SETTINGS, FLOOR_PLANS_FOLDER} from '../app.config';
+import {ANIMATION_SETTINGS, ANNUAL_DOCUMENTS_FOLDER} from '../app.config';
 import {AsyncPipe} from '@angular/common';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ErrorDialog} from "../utility/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 
 @Component({
-  selector: 'floor-plans',
+  selector: 'annual-documents',
   standalone: true,
   imports: [
     MatList,
@@ -28,27 +28,27 @@ import {MatDialog} from "@angular/material/dialog";
     MatIconAnchor,
     MatFabButton
   ],
-  templateUrl: './floor-plans.component.html',
+  templateUrl: './annual-documents.component.html',
 })
-export class FloorPlanComponent {
+export class AnnualDocumentsComponent {
   private readonly dataService = inject(DataService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly storage = inject(Storage);
 
-  protected readonly floorPlanFilenames: Signal<string[]> = signal([]);
-  protected readonly floorPlanDownloadUrls: Signal<{ [key: string]: Observable<string> }> = computed(() => {
+  protected readonly annualDocumentFilenames: Signal<string[]> = signal([]);
+  protected readonly annualDocumentDownloadUrls: Signal<{ [key: string]: Observable<string> }> = computed(() => {
     return this.refreshDownloadUrls();
   });
 
   constructor() {
-    this.floorPlanFilenames = this.dataService.floorPlanFilenames;
+    this.annualDocumentFilenames = this.dataService.annualDocumentFilenames;
   }
 
   refreshDownloadUrls(): { [key: string]: Observable<string> } {
     const downloadUrls = {} as { [key: string]: Observable<string> };
-    const rootRef = ref(this.storage, FLOOR_PLANS_FOLDER);
-    this.floorPlanFilenames().forEach(filename => {
+    const rootRef = ref(this.storage, ANNUAL_DOCUMENTS_FOLDER);
+    this.annualDocumentFilenames().forEach(filename => {
       downloadUrls[filename] = from(getDownloadURL(ref(rootRef, filename)));
     });
     return downloadUrls;
@@ -62,34 +62,34 @@ export class FloorPlanComponent {
       return;
     }
 
-    if (this.floorPlanFilenames().includes(file.name)) {
-      if (!confirm(`Floor plan "${file.name}" already exists. Replace?`)) {
+    if (this.annualDocumentFilenames().includes(file.name)) {
+      if (!confirm(`Document "${file.name}" already exists. Replace?`)) {
         return;
       }
     }
 
-    const rootRef = ref(this.storage, FLOOR_PLANS_FOLDER);
+    const rootRef = ref(this.storage, ANNUAL_DOCUMENTS_FOLDER);
     this.dataService.uploadToStorage(ref(rootRef, file.name), file).then(() => {
       this.snackBar.open('Upload complete', 'Ok', {
         duration: 3000
       });
     }).catch(error => {
-      this.dialog.open(ErrorDialog, {data: `Couldn't upload floor plan: ${error.message}`, ...ANIMATION_SETTINGS});
+      this.dialog.open(ErrorDialog, {data: `Couldn't upload annual document: ${error.message}`, ...ANIMATION_SETTINGS});
     });
   }
 
   delete(filename: string) {
-    if (!confirm(`Really delete floor plan "${filename}"? This cannot be undone.`)) {
+    if (!confirm(`Really delete document "${filename}"? This cannot be undone.`)) {
       return;
     }
 
-    const rootRef = ref(this.storage, FLOOR_PLANS_FOLDER);
+    const rootRef = ref(this.storage, ANNUAL_DOCUMENTS_FOLDER);
     this.dataService.deleteStorageRef(ref(rootRef, filename)).then(() => {
-      this.snackBar.open(`Floor plan deleted: ${filename}`, 'Ok', {
+      this.snackBar.open(`Document deleted: ${filename}`, 'Ok', {
         duration: 3000
       });
     }).catch(error => {
-      this.dialog.open(ErrorDialog, {data: `Couldn't delete floor plan: ${error.message}`, ...ANIMATION_SETTINGS});
+      this.dialog.open(ErrorDialog, {data: `Couldn't delete annual document: ${error.message}`, ...ANIMATION_SETTINGS});
     });
   }
 }
