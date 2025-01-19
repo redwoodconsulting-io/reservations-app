@@ -346,14 +346,22 @@ export class DataService {
     }, {} as UnitPricingMap);
   }
 
-  async deleteFloorPlan(storageRef: StorageReference) {
+  async deleteStorageRef(storageRef: StorageReference) {
     await deleteObject(storageRef);
-    this.refreshFloorPlans();
+    if (storageRef.fullPath.includes(ANNUAL_DOCUMENTS_FOLDER)) {
+      this.refreshAnnualDocuments();
+    } else if (storageRef.fullPath.includes(FLOOR_PLANS_FOLDER)) {
+      this.refreshFloorPlans();
+    }
   }
 
-  async uploadFloorPlan(storageRef: StorageReference, file: File) {
+  async uploadToStorage(storageRef: StorageReference, file: File) {
     await uploadBytes(storageRef, file);
-    this.refreshFloorPlans();
+    if (storageRef.fullPath.includes(ANNUAL_DOCUMENTS_FOLDER)) {
+      this.refreshAnnualDocuments();
+    } else if (storageRef.fullPath.includes(FLOOR_PLANS_FOLDER)) {
+      this.refreshFloorPlans();
+    }
   }
 
   private refreshAnnualDocuments() {

@@ -5,6 +5,7 @@ import {FloorPlanComponent} from './admin/floor-plans.component';
 import {UnitPricingComponent} from './admin/unit-pricing.component';
 import {ReservationRoundsComponent} from './admin/reservation-rounds.component';
 import {PasswordsComponent} from './admin/passwords.component';
+import {AnnualDocumentsComponent} from './admin/annual-documents.component';
 
 export const routes: Routes = [
   {path: 'reservations', component: ReservationsComponent},
@@ -12,6 +13,10 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminComponent,
     children: [
+      {
+        path: 'annual-documents',
+        component: AnnualDocumentsComponent,
+      },
       {
         path: 'floor-plans',
         component: FloorPlanComponent,
